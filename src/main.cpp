@@ -178,7 +178,6 @@ MAKE_HOOK_OFFSETLESS(VRRig_PlayTagSound, void, Il2CppObject* self, int soundInde
 
 MAKE_HOOK_OFFSETLESS(GorillaTagManager_ReportTag, void, Il2CppObject* self, Il2CppObject* taggedPlayer, Il2CppObject* taggingPlayer)
 {
-    int linecounter = 0;
     GorillaTagManager_ReportTag(self, taggedPlayer, taggingPlayer);
     Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
     bool IsMine = *il2cpp_utils::RunMethod<bool>(photonView, "get_IsMine");

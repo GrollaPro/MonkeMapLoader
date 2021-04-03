@@ -11,14 +11,22 @@ namespace MapLoader
         deltaAngle = 0;
         previousAngle = 0;
         Il2CppObject* go = *il2cpp_utils::RunMethod(this, "get_gameObject");
+        
+        static std::vector<Il2CppClass*> colliderKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "Collider")};
+        Il2CppObject* collider = *il2cpp_utils::RunGenericMethod(go, "GetComponent", colliderKlass);
+        Bounds bounds = *il2cpp_utils::RunMethod<Bounds>(collider, "get_bounds");
+        midPoint = bounds.center;
 
+        /*
         static std::vector<Il2CppClass*> rendererKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "Renderer")};
         Il2CppObject* renderer = *il2cpp_utils::RunGenericMethod(go, "GetComponent", rendererKlass);
         if (!renderer) return;
 
+        using GetBounds = function_ptr_t<Bounds, Il2CppObject*>;
+        GetBounds get_bounds = il2cpp_functions::resolve_icall("UnityEngine.Renderer::get_bounds_Injected");
         Bounds bounds = *il2cpp_utils::RunMethod<Bounds>(renderer, "get_bounds");
         midPoint = bounds.center;
-
+        */
         // Rigidbody Stuff
         static std::vector<Il2CppClass*> rigidBodyKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "Rigidbody")};
         rigidBody = *il2cpp_utils::RunGenericMethod(go, "GetComponent", rigidBodyKlass);

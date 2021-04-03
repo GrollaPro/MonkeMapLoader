@@ -35,6 +35,9 @@ namespace MapLoader
         mapLoadData.moveNext = false;
         switch (mapLoadData.loadState)
         {
+            case LoadState::LoadingData:
+                LoadData();
+                break;
             case LoadState::LoadingBundle:
                 LoadBundle();
                 break;
@@ -296,10 +299,6 @@ namespace MapLoader
         using SetGravity = function_ptr_t<void, Vector3&>;
         static SetGravity set_gravity = reinterpret_cast<SetGravity>(il2cpp_functions::resolve_icall("UnityEngine.Physics::set_gravity_Injected"));
         set_gravity(gravity);
-        /*
-        #warning Added return so we can play cross platform for now
-        return;
-        */
         /// Get All Objects Of Type GameObject
         static std::vector<Il2CppClass*> goKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "GameObject")};
         Array<Il2CppObject*>* allObjects = *il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>("UnityEngine", "Resources", "FindObjectsOfTypeAll", goKlass);
@@ -339,35 +338,49 @@ namespace MapLoader
         lobbyName = "";
 
         mapLoadData.info = info;
-        mapLoadData.loadState = LoadState::LoadingBundle;
+        mapLoadData.loadState = (LoadState)0;
         mapLoadData.moveNext = true;
+    }
+
+    void Loader::LoadData()
+    {
+        std::thread bundleLoad([&]{
+            int err = 0;
+            zip *z = zip_open(mapLoadData.info.filePath.c_str(), 0, &err);
+
+            struct zip_stat st;
+            zip_stat_init(&st);
+            zip_stat(z, mapLoadData.info.packageInfo->androidFileName.c_str(), 0, &st);
+
+            zip_file* f = zip_fopen(z, st.name, 0);
+            uint8_t* bundle = new uint8_t[st.size];
+            zip_fread(f, (char*)bundle, st.size);
+            zip_fclose(f);
+            zip_close(z);
+            this->mapLoadData.data.clear();
+            
+            this->mapLoadData.data = std::vector<uint8_t>(bundle, bundle + st.size);
+            /*
+            for (int i = 0; i < st.size; i++)
+            {
+                this->mapLoadData.data.push_back((uint8_t)bundle[i]);
+            }
+            */
+            delete[](bundle);
+
+            this->mapLoadData.loadState = LoadState::LoadingBundle;
+            this->mapLoadData.moveNext = true;
+        });
+
+        bundleLoad.detach();
     }
 
     void Loader::LoadBundle()
     {
-        int err = 0;
-        zip *z = zip_open(mapLoadData.info.filePath.c_str(), 0, &err);
-        
-        struct zip_stat st;
-        zip_stat_init(&st);
-        zip_stat(z, mapLoadData.info.packageInfo->androidFileName.c_str(), 0, &st);
-
-        zip_file* f = zip_fopen(z, st.name, 0);
-        char* bundle = new char[st.size];
-        zip_fread(f, bundle, st.size);
-        zip_fclose(f);
-        zip_close(z);
-        std::vector<uint8_t> byteVector;
-        for (int i = 0; i < st.size; i++)
-        {
-            byteVector.push_back((uint8_t)bundle[i]);
-        }
-        delete[](bundle);
-        Array<uint8_t>* byteArray = il2cpp_utils::vectorToArray(byteVector);
-
+        Array<uint8_t>* byteArray = il2cpp_utils::vectorToArray(mapLoadData.data);
         using LoadFromMemory = function_ptr_t<Il2CppObject*, Array<uint8_t>*, unsigned int>;
         static LoadFromMemory loadFromMemory = reinterpret_cast<LoadFromMemory>(il2cpp_functions::resolve_icall("UnityEngine.AssetBundle::LoadFromMemory_Internal"));
-    
+
         mapLoadData.bundle = loadFromMemory(byteArray, 0);
         mapLoadData.loadState = LoadState::LoadingScene;
         mapLoadData.moveNext = true;
@@ -380,25 +393,16 @@ namespace MapLoader
         Il2CppString* scenePath = scenePaths->values[0];
 
         LoadSceneParameters params = {LoadSceneMode::Additive, LocalPhysicsMode::Physics3D};
-        /*
-        using LoadScene = function_ptr_t<Scene, Il2CppString*, LoadSceneParameters>;
-        static LoadScene loadScene = *il2cpp_functions::resolve_icall("UnityEngine.SceneManagement.SceneManager::LoadScene_Internal");
-        
-        //mapLoadData.scene = *il2cpp_utils::RunMethod<Scene>("UnityEngine.SceneManagement", "SceneManager", "LoadScene", scenePath, params);
-        mapLoadData.scene = loadScene(scenePath, params);
-        */
 
         auto* sceneAsync = *il2cpp_utils::RunMethod("UnityEngine.SceneManagement", "SceneManager", "LoadSceneAsync", scenePath, params);
 
         auto method = il2cpp_utils::FindMethodUnsafe(sceneAsync, "add_completed", 1);
-        std::function<void(Scene)> fun = [&](Scene scene){
-            mapLoadData.scene = scene;
-
+        std::function<void(void)> fun = [&]{
             mapLoadData.loadState = LoadState::InitializingMap;
             mapLoadData.moveNext = true;
         };
 
-        auto action = il2cpp_utils::MakeDelegate(method, 0, new std::function<void(Scene)>(fun), SceneComplete);
+        auto action = il2cpp_utils::MakeDelegate(method, 0, new std::function<void(void)>(fun), SceneComplete);
 
         il2cpp_utils::RunMethod(sceneAsync, method, action);
 
@@ -406,11 +410,9 @@ namespace MapLoader
 
     void Loader::SceneComplete(void* callback, Il2CppObject* sceneLoadRequest)
     {
-        Scene scene = *il2cpp_utils::RunMethod<Scene>(sceneLoadRequest, "get_scene");
-
+        ((std::function<void(void)>*)callback)->operator()();
+        delete(((std::function<void(void)>*)callback));
         il2cpp_utils::RunMethod(sceneLoadRequest, "Finalize");
-
-        ((std::function<void(Scene)>*)callback)->operator()(scene);
     }
 
     void Loader::InitializeMap()
@@ -542,8 +544,6 @@ namespace MapLoader
 
         emergencyTeleporter->tagOnTeleport = true;
         emergencyTeleporter->teleporterType = TeleporterType::Map;
-
-
     }
 
     void Loader::ProcessChildren(Il2CppObject* parent)

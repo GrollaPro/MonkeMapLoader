@@ -11,6 +11,7 @@
 namespace MapLoader
 {
     enum class LoadState {
+        LoadingData,
         LoadingBundle,
         LoadingScene,
         InitializingMap
@@ -20,8 +21,8 @@ namespace MapLoader
     {
         MapInfo info;
         bool moveNext = false;
-        LoadState loadState = LoadState::LoadingBundle;
-        Scene scene;
+        LoadState loadState = LoadState::LoadingData;
+        std::vector<uint8_t> data = {};
         Il2CppObject* bundle = nullptr;
         Il2CppObject* root = nullptr;
     };
@@ -41,6 +42,7 @@ DECLARE_CLASS(MapLoader, Loader, "UnityEngine", "MonoBehaviour", sizeof(Il2CppOb
     DECLARE_METHOD(void, Update);
     DECLARE_METHOD(void, UnloadMap);
     DECLARE_METHOD(void, Initialize);
+    DECLARE_METHOD(void, LoadData);
     DECLARE_METHOD(void, LoadBundle);
     DECLARE_METHOD(void, LoadScene);
     DECLARE_METHOD(static void, SceneComplete, void*, Il2CppObject* sceneLoadRequest);
@@ -64,6 +66,7 @@ DECLARE_CLASS(MapLoader, Loader, "UnityEngine", "MonoBehaviour", sizeof(Il2CppOb
         REGISTER_METHOD(Update);
         REGISTER_METHOD(UnloadMap);
         REGISTER_METHOD(Initialize);
+        REGISTER_METHOD(LoadData);
         REGISTER_METHOD(LoadBundle);
         REGISTER_METHOD(LoadScene);
         REGISTER_METHOD(SceneComplete);
