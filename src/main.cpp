@@ -61,6 +61,7 @@ MAKE_HOOK_OFFSETLESS(GorillaComputer_Start, void, Il2CppObject* self)
     Loader* loader = *il2cpp_utils::RunGenericMethod<Loader*>(newGo, "AddComponent", std::vector<Il2CppClass*>{classof(Loader*)});
     loader->Initialize();
 }
+
 static bool disabledBecauseUnclimbable = false;
 MAKE_HOOK_OFFSETLESS(Player_CollisionsSphereCast, bool, Il2CppObject* self, Vector3 startPosition, float sphereRadius, Vector3 movementVector, float precision, Vector3* finalPosition, RaycastHit* hitInfo)
 {
@@ -178,6 +179,7 @@ MAKE_HOOK_OFFSETLESS(VRRig_PlayTagSound, void, Il2CppObject* self, int soundInde
 
 MAKE_HOOK_OFFSETLESS(GorillaTagManager_ReportTag, void, Il2CppObject* self, Il2CppObject* taggedPlayer, Il2CppObject* taggingPlayer)
 {
+    getLogger().info("Player Tagged!");
     GorillaTagManager_ReportTag(self, taggedPlayer, taggingPlayer);
     Il2CppObject* photonView = *il2cpp_utils::RunMethod(self, "get_photonView");
     bool IsMine = *il2cpp_utils::RunMethod<bool>(photonView, "get_IsMine");
@@ -203,19 +205,22 @@ MAKE_HOOK_OFFSETLESS(GorillaTagManager_ReportTag, void, Il2CppObject* self, Il2C
                 il2cpp_utils::RunMethod(self, "ChangeCurrentIt", taggedPlayer);
 
                 static Il2CppClass* HashtableKlass = il2cpp_utils::GetClassFromName("ExitGames.Client.Photon", "Hashtable");
+                
+                /*
                 Il2CppObject* hashTable = *il2cpp_utils::New(HashtableKlass);
                 static Il2CppString* lastTag = il2cpp_utils::createcsstr("lastTag", il2cpp_utils::StringType::Manual);
                 double time = *il2cpp_utils::RunMethod<double>("Photon.Pun", "PhotonNetwork", "get_Time");
                 il2cpp_utils::RunMethod(hashTable, "Add", lastTag, time);
 
                 Il2CppObject* currentRoom = *il2cpp_utils::GetFieldValue(self, "currentRoom");
-                /*
+                
                 Il2CppObject* expectedProperties = *il2cpp_utils::New(HashtableKlass);
                 Il2CppObject* otherFlags = *il2cpp_utils::New(webFlagsKlass, (uint8_t)1);
                 auto* SetCustomProperties = il2cpp_utils::FindMethodUnsafe(currentRoom, "SetCustomProperties", 3);]
                 ::il2cpp_utils::RunMethodThrow<bool, false>(currentRoom, SetCustomProperties, hashTable, nullptr, nullptr);
                 */
-                time = *il2cpp_utils::RunMethod<double>("Photon.Pun", "PhotonNetwork", "get_Time");
+
+                double time = (double)*il2cpp_utils::RunMethod<float>("UnityEngine", "Time", "get_time");
                 il2cpp_utils::SetFieldValue(self, "lastTag", time);
 
                 Array<Il2CppObject*>* eventContent = reinterpret_cast<Array<Il2CppObject*>*>(il2cpp_functions::array_new(classof(Il2CppObject*), 2));
@@ -240,7 +245,7 @@ MAKE_HOOK_OFFSETLESS(GorillaTagManager_ReportTag, void, Il2CppObject* self, Il2C
                 }
             }
 
-            if (contains)
+            if (!contains)
             {
                 il2cpp_utils::RunMethod(self, "AddInfectedPlayer", taggedPlayer);
 
