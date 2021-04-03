@@ -35,6 +35,7 @@ namespace MapLoader
         {
             ((UISelectionHandler*)selectionHandler)->max = maps.size();
         }
+        getLogger().info("Got %d maps, on %d pages", mapCount, pageCount);
     }
 
     void MapSelectorView::DidActivate(bool firstActivation)
@@ -82,6 +83,7 @@ namespace MapLoader
         DrawHeader();
         DrawMaps();
 
+        getLogger().info("Redrawing on Custom Computer!");
         CustomComputer::Redraw();
     }
     
@@ -107,8 +109,11 @@ namespace MapLoader
     
     void MapSelectorView::OnKeyPressed(int key)
     {
+        getLogger().info("Key %d input, mapcount: %d", key, mapCount);
+
         if (mapCount == 0) return;
 
+        getLogger().info("check option 1");
         if (key == (int)EKeyboardKey::Option1)
         {
             MapList::Load();
@@ -124,6 +129,7 @@ namespace MapLoader
             }
         }
 
+        getLogger().info("check first letter");
         char letter;
         if (KeyExtension::TryParseLetter((EKeyboardKey)key, letter))
         {
@@ -155,6 +161,7 @@ namespace MapLoader
             }
         }
 
+        getLogger().info("check num");
         int num;
         if (KeyExtension::TryParseNumber((EKeyboardKey)key, num))
         {
@@ -185,14 +192,33 @@ namespace MapLoader
             }
         }
 
-        if (((UISelectionHandler*)selectionHandler)->HandleKey((EKeyboardKey)key) ||
-            ((UISelectionHandler*)pageSelectionHandler)->HandleKey((EKeyboardKey)key))
+        getLogger().info("check paging");
+        if (
+                ((UISelectionHandler*)selectionHandler)->HandleKey((EKeyboardKey)key) ||
+                ((UISelectionHandler*)pageSelectionHandler)->HandleKey((EKeyboardKey)key)
+            )
         {
+            getLogger().info("Orb needs to be updated");
             int index = ((UISelectionHandler*)selectionHandler)->currentSelectionIndex + (MOD_PAGE_SIZE * ((UISelectionHandler*)pageSelectionHandler)->currentSelectionIndex);
-            if (index > mapCount - 1) index = mapCount - 1;
+            getLogger().info("Got index");
+            if (index > mapCount - 1)
+            { 
+                getLogger().info("clamped index");
+                index = mapCount - 1;
+            }
+            getLogger().info("Changing orb");
             PreviewOrb::ChangeOrb(MapList::get_map(index));
+            getLogger().info("end of if");
+            this->Redraw();
+
+        }
+        else 
+        {
+            this->Redraw();
         }
 
-        Redraw();
+        getLogger().info("Should redraw");
+        this->Redraw();
+        getLogger().info("Done");
     }
 }

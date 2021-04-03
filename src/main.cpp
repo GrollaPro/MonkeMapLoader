@@ -1,7 +1,7 @@
 #include "modloader/shared/modloader.hpp"
 #include "beatsaber-hook/shared/utils/logging.hpp"
 #include "beatsaber-hook/shared/utils/utils.h"
-#include "cosmeticsloader/shared/CosmeticLoader.hpp"
+#include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
 #include "typedefs.h"
 #include <thread>
 
@@ -64,8 +64,9 @@ MAKE_HOOK_OFFSETLESS(GorillaComputer_Start, void, Il2CppObject* self)
 static bool disabledBecauseUnclimbable = false;
 MAKE_HOOK_OFFSETLESS(Player_CollisionsSphereCast, bool, Il2CppObject* self, Vector3 startPosition, float sphereRadius, Vector3 movementVector, float precision, Vector3* finalPosition, RaycastHit* hitInfo)
 {
-    bool result = Player_CollisionsSphereCast(self, startPosition, sphereRadius, movementVector, precision, finalPosition, hitInfo);
 
+    bool result = Player_CollisionsSphereCast(self, startPosition, sphereRadius, movementVector, precision, finalPosition, hitInfo);
+    return result;
     if (result)
     {
         float minimumRaycastDistance = *il2cpp_utils::GetFieldValue<float>(self, "minimumRaycastDistance");
@@ -96,13 +97,45 @@ MAKE_HOOK_OFFSETLESS(Player_CollisionsSphereCast, bool, Il2CppObject* self, Vect
 MAKE_HOOK_OFFSETLESS(Player_Update, void, Il2CppObject* self)
 {
     Player_Update(self);
-
+    return;
     bool disableMovement = *il2cpp_utils::GetFieldValue<bool>(self, "disableMovement");
     if (disableMovement && disabledBecauseUnclimbable)
     {
         il2cpp_utils::SetFieldValue(self, "disableMovement", false);
         disabledBecauseUnclimbable = false;
     }
+}
+
+MAKE_HOOK_OFFSETLESS(Player_GetSlidePercentage, float, Il2CppObject* self, RaycastHit raycastHit)
+{
+    Il2CppObject* collider = *il2cpp_utils::RunMethod(raycastHit, "get_collider");
+    Il2CppObject* go = *il2cpp_utils::RunMethod(collider, "get_gameObject");
+    static std::vector<Il2CppClass*> settingsKlass = {classof(SurfaceClimbSettings*)};
+    SurfaceClimbSettings* settings = *il2cpp_utils::RunGenericMethod<SurfaceClimbSettings*>(go, "GetComponent", settingsKlass);
+    
+    static auto* get_sharedMesh = il2cpp_utils::FindMethodUnsafe("UnityEngine", "MeshCollider", "get_sharedMesh", 0);
+    Il2CppObject* sharedMesh = *il2cpp_utils::RunMethod(collider, get_sharedMesh);
+
+    if (settings)
+    {
+        static std::vector<Il2CppClass*> surfaceKlass = {il2cpp_utils::GetClassFromName("GorillaLocomotion", "Surface")};
+        Il2CppObject* surface = *il2cpp_utils::RunGenericMethod(go, "GetComponent", surfaceKlass);
+        float slipPercentage = *il2cpp_utils::GetFieldValue<float>(surface, "slipPercentage");
+        return slipPercentage;
+    }
+
+    if (!collider || !sharedMesh)
+    {
+        return *il2cpp_utils::GetFieldValue<float>(self, "defaultSlideFactor");
+    }
+    
+    bool isReadable = *il2cpp_utils::RunMethod<bool>(sharedMesh, "get_isReadable");
+    
+    if (!isReadable)
+    {
+        return *il2cpp_utils::GetFieldValue<float>(self, "defaultSlideFactor");
+    }
+    return Player_GetSlidePercentage(self, raycastHit);
 }
 
 static double lastGameEnd = 0.0;
@@ -238,7 +271,7 @@ extern "C" void setup(ModInfo& info)
 extern "C" void load()
 {
     getLogger().info("Loading mod...");
-    Modloader::requireMod("MonkeComputer", "1.0.2");
+    Modloader::requireMod("MonkeComputer", "1.0.3");
     std::string mapDir = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/MonkeMapLoader/CustomMaps/";
     FileUtils::mkdir(mapDir);
 
@@ -246,6 +279,7 @@ extern "C" void load()
     INSTALL_HOOK_OFFSETLESS(getLogger(), Player_Awake, il2cpp_utils::FindMethodUnsafe("GorillaLocomotion", "Player", "Awake", 0));
     INSTALL_HOOK_OFFSETLESS(getLogger(), Player_CollisionsSphereCast, il2cpp_utils::FindMethodUnsafe("GorillaLocomotion", "Player", "CollisionsSphereCast", 6));
     INSTALL_HOOK_OFFSETLESS(getLogger(), Player_Update, il2cpp_utils::FindMethodUnsafe("GorillaLocomotion", "Player", "Update", 0));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), Player_GetSlidePercentage, il2cpp_utils::FindMethodUnsafe("GorillaLocomotion", "Player", "GetSlidePercentage", 1));
     INSTALL_HOOK_OFFSETLESS(getLogger(), VRRig_PlayTagSound, il2cpp_utils::FindMethodUnsafe("", "VRRig", "PlayTagSound", 1));
     INSTALL_HOOK_OFFSETLESS(getLogger(), GorillaTagManager_ReportTag, il2cpp_utils::FindMethodUnsafe("", "GorillaTagManager", "ReportTag", 2));
     

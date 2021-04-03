@@ -7,15 +7,10 @@ if (-not ($PSVersionTable.PSEdition -eq "Core")) {
 }
 
 & $buildScript NDK_PROJECT_PATH=$PSScriptRoot APP_BUILD_SCRIPT=$PSScriptRoot/Android.mk NDK_APPLICATION_MK=$PSScriptRoot/Application.mk -j 4
-Compress-Archive -Path  "./libs/arm64-v8a/libbeatsaber-hook_1_1_2.so",`
-                        "./extern/libbeatsaber-hook_1_1_0.so",`
-                        "./libs/arm64-v8a/libcustom-types.so",`
+Compress-Archive -Path  "./libs/arm64-v8a/libbeatsaber-hook_1_2_4.so",`
                         "./libs/arm64-v8a/libmonkemaploader.so",`
-                        "./libs/arm64-v8a/libzip.so",`
-                        "./ExtraFiles/Teleporter/teleporter.json",`
-                        "./ExtraFiles/Teleporter/teleporter",`
-                        "./ExtraFiles/Orb/orb.json",`
-                        "./ExtraFiles/Orb/orb",`
+                        "./ExtraFiles/Teleporter",`
+                        "./ExtraFiles/Orb",`
                         "./mod.json" -DestinationPath "./MonkeMapLoader.zip" -Update
 
 & copy-item -Force "./MonkeMapLoader.zip" "./MonkeMapLoader.qmod"

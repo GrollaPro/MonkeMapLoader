@@ -10,7 +10,7 @@
 #include "Behaviours/RotateByHand.hpp"
 
 #include "Utils/RoomUtils.hpp"
-#include "cosmeticsloader/shared/CosmeticLoader.hpp"
+#include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
 
 DEFINE_CLASS(MapLoader::Loader);
 
@@ -56,6 +56,8 @@ namespace MapLoader
             il2cpp_utils::RunMethod("UnityEngine", "Object", "Destroy", mapInstance);
             
             mapInstance = nullptr;
+            
+            ColorTreeTeleporter(red);
             /*
             using UnloadUnusedAssets = function_ptr_t<void>;
             static UnloadUnusedAssets unloadUnusedAssets = reinterpret_cast<UnloadUnusedAssets>(il2cpp_functions::resolve_icall("UnityEngine.Resources::UnloadUnusedAssets"));
@@ -91,7 +93,7 @@ namespace MapLoader
         // create map teleporter
         if (!globalData->bigTreeTeleportToMap)
         {
-            std::string treeTeleporterPath = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/MonkeMapLoader/Teleporter/teleporter.json";
+            std::string treeTeleporterPath = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/MonkeMapLoader/Teleporter";
             auto* loader = new CosmeticLoader(treeTeleporterPath, [&](std::string name, Il2CppObject* teleporter){
                 globalData->bigTreeTeleportToMap = teleporter;
                 il2cpp_utils::RunMethod(teleporter, "set_layer", MASKLAYER_PLAYERTRIGGER);
@@ -99,7 +101,7 @@ namespace MapLoader
             }, "_Teleporter", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
         }
         
-        std::string orbPath = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/MonkeMapLoader/Orb/orb.json";
+        std::string orbPath = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/MonkeMapLoader/Orb";
         auto* loader = new CosmeticLoader(orbPath, [&](std::string name, Il2CppObject* orb){
             static std::vector<Il2CppClass*> orbKlass = {classof(PreviewOrb*)};
             static std::vector<Il2CppClass*> rotateKlass = {classof(RotateByHand*)};
@@ -334,13 +336,7 @@ namespace MapLoader
         isLoading = true;
         UnloadMap();
 
-        
-        lobbyName = info.packageInfo->descriptor.author + "_" + info.packageInfo->descriptor.mapName;
-        
-        if (info.packageInfo->config.guid != "")
-        {
-            lobbyName = string_format("%s_%d", info.packageInfo->config.guid.c_str(), info.packageInfo->config.version);
-        }
+        lobbyName = "";
 
         mapLoadData.info = info;
         mapLoadData.loadState = LoadState::LoadingBundle;
@@ -384,10 +380,37 @@ namespace MapLoader
         Il2CppString* scenePath = scenePaths->values[0];
 
         LoadSceneParameters params = {LoadSceneMode::Additive, LocalPhysicsMode::Physics3D};
-        mapLoadData.scene = *il2cpp_utils::RunMethod<Scene>("UnityEngine.SceneManagement", "SceneManager", "LoadScene", scenePath, params);
+        /*
+        using LoadScene = function_ptr_t<Scene, Il2CppString*, LoadSceneParameters>;
+        static LoadScene loadScene = *il2cpp_functions::resolve_icall("UnityEngine.SceneManagement.SceneManager::LoadScene_Internal");
+        
+        //mapLoadData.scene = *il2cpp_utils::RunMethod<Scene>("UnityEngine.SceneManagement", "SceneManager", "LoadScene", scenePath, params);
+        mapLoadData.scene = loadScene(scenePath, params);
+        */
 
-        mapLoadData.loadState = LoadState::InitializingMap;
-        mapLoadData.moveNext = true;
+        auto* sceneAsync = *il2cpp_utils::RunMethod("UnityEngine.SceneManagement", "SceneManager", "LoadSceneAsync", scenePath, params);
+
+        auto method = il2cpp_utils::FindMethodUnsafe(sceneAsync, "add_completed", 1);
+        std::function<void(Scene)> fun = [&](Scene scene){
+            mapLoadData.scene = scene;
+
+            mapLoadData.loadState = LoadState::InitializingMap;
+            mapLoadData.moveNext = true;
+        };
+
+        auto action = il2cpp_utils::MakeDelegate(method, 0, new std::function<void(Scene)>(fun), SceneComplete);
+
+        il2cpp_utils::RunMethod(sceneAsync, method, action);
+
+    }
+
+    void Loader::SceneComplete(void* callback, Il2CppObject* sceneLoadRequest)
+    {
+        Scene scene = *il2cpp_utils::RunMethod<Scene>(sceneLoadRequest, "get_scene");
+
+        il2cpp_utils::RunMethod(sceneLoadRequest, "Finalize");
+
+        ((std::function<void(Scene)>*)callback)->operator()(scene);
     }
 
     void Loader::InitializeMap()
@@ -430,6 +453,13 @@ namespace MapLoader
         il2cpp_utils::RunMethod(mapLoadData.bundle, "Unload", false);
         mapLoadData.bundle = nullptr;
         isLoading = false;
+
+        lobbyName = mapLoadData.info.packageInfo->descriptor.author + "_" + mapLoadData.info.packageInfo->descriptor.mapName;
+        
+        if (mapLoadData.info.packageInfo->config.guid != "")
+        {
+            lobbyName = string_format("%s_%d", mapLoadData.info.packageInfo->config.guid.c_str(), mapLoadData.info.packageInfo->config.version);
+        }
     }
 
     void Loader::ProcessMap(Il2CppObject* map)
@@ -512,6 +542,8 @@ namespace MapLoader
 
         emergencyTeleporter->tagOnTeleport = true;
         emergencyTeleporter->teleporterType = TeleporterType::Map;
+
+
     }
 
     void Loader::ProcessChildren(Il2CppObject* parent)

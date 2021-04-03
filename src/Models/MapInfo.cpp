@@ -60,7 +60,7 @@ namespace MapLoader
         Array<uint8_t>* byteArray = il2cpp_utils::vectorToArray(byteVector);
         static Il2CppClass* textureKlass = il2cpp_utils::GetClassFromName("UnityEngine", "Texture2D");
 
-        Il2CppObject* texture = *il2cpp_utils::New(textureKlass, 0, 0, 4, false, false);
+        Il2CppObject* texture = *il2cpp_utils::New(textureKlass, 0, 0, 4, false);
         loadImage(texture, byteArray, false);
         delete[](cubeMap);
         packageInfo->previewCubeMap = texture;

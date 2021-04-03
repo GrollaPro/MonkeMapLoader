@@ -43,6 +43,7 @@ DECLARE_CLASS(MapLoader, Loader, "UnityEngine", "MonoBehaviour", sizeof(Il2CppOb
     DECLARE_METHOD(void, Initialize);
     DECLARE_METHOD(void, LoadBundle);
     DECLARE_METHOD(void, LoadScene);
+    DECLARE_METHOD(static void, SceneComplete, void*, Il2CppObject* sceneLoadRequest);
     DECLARE_METHOD(void, InitializeMap);
     DECLARE_METHOD(void, InitializeGlobalData);
     DECLARE_METHOD(void, ProcessMap, Il2CppObject* map);
@@ -65,6 +66,7 @@ DECLARE_CLASS(MapLoader, Loader, "UnityEngine", "MonoBehaviour", sizeof(Il2CppOb
         REGISTER_METHOD(Initialize);
         REGISTER_METHOD(LoadBundle);
         REGISTER_METHOD(LoadScene);
+        REGISTER_METHOD(SceneComplete);
         REGISTER_METHOD(InitializeMap);
         REGISTER_METHOD(InitializeGlobalData);
         REGISTER_METHOD(ColorTreeTeleporter);
