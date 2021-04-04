@@ -230,6 +230,7 @@ MAKE_HOOK_OFFSETLESS(GorillaTagManager_ReportTag, void, Il2CppObject* self, Il2C
                 SendOptions options = *il2cpp_utils::GetFieldValue<SendOptions>("ExitGames.Client.Photon", "SendOptions", "SendReliable");
                 il2cpp_utils::RunMethod("Photon.Pun", "PhotonNetwork", "RaiseEvent", (uint8_t)1, (Il2CppObject*)eventContent, raiseEventOptions, options);
             }
+            else getLogger().info("Player Was already it!");
         }
         else
         {
@@ -256,6 +257,7 @@ MAKE_HOOK_OFFSETLESS(GorillaTagManager_ReportTag, void, Il2CppObject* self, Il2C
                 SendOptions options = *il2cpp_utils::GetFieldValue<SendOptions>("ExitGames.Client.Photon", "SendOptions", "SendReliable");
                 il2cpp_utils::RunMethod("Photon.Pun", "PhotonNetwork", "RaiseEvent", 2, eventContent, raiseEventOptions, options);
             }
+            else getLogger().info("Player Was already infected!");
         }
     }
     else
