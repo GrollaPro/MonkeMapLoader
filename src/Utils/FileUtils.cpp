@@ -60,7 +60,8 @@ namespace FileUtils
             closedir(fileDir);
         }
         return foundTheExtension;
-    }  
+    } 
+     
     void mkdir(string dir) 
     { 
         makeFolder(dir); 

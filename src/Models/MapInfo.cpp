@@ -3,6 +3,19 @@
 #include "libzip/shared/zip.h"
 #include "beatsaber-hook/shared/utils/utils.h"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
+#include "Utils/FileUtils.hpp"
+
+std::string toLower(std::string aString)
+{
+    std::string result = "";
+
+    for (auto c : aString)
+    {
+        result += tolower(c);
+    }
+
+    return result;
+}
 
 extern Logger& getLogger();
 namespace MapLoader
@@ -66,4 +79,12 @@ namespace MapLoader
         packageInfo->previewCubeMap = texture;
         return packageInfo->previewCubeMap;
     }
+
+    bool MapInfo::operator<(const MapInfo& second) const
+    {
+        std::string firstName = toLower(this->packageInfo->descriptor.mapName);
+        std::string secondName = toLower(second.packageInfo->descriptor.mapName);
+        return firstName < secondName;
+    }
+
 }

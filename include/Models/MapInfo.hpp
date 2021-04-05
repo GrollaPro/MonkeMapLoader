@@ -7,6 +7,7 @@ namespace MapLoader
     class MapInfo
     {
         public:
+            bool operator<(const MapInfo& second) const;
             MapInfo(std::string filePath) : filePath(filePath) {};
             void Load();
             Il2CppObject* LoadCubeMap();

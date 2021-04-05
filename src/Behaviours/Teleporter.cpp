@@ -52,6 +52,7 @@ namespace MapLoader
         {
             if (teleporterType == TeleporterType::Map)
             {
+                getLogger().info("Even after trying to add spawnpoints, the array was empty");
                 static Il2CppString* treeHomeTargetObjectName = il2cpp_utils::createcsstr("TreeHomeTargetObject", il2cpp_utils::StringType::Manual);
                 Il2CppObject* treeHomeTargetObject = *il2cpp_utils::RunMethod("UnityEngine", "GameObject", "Find", treeHomeTargetObjectName);
                 Il2CppObject* treeHomeTransform = *il2cpp_utils::RunMethod(treeHomeTargetObject, "get_transform");

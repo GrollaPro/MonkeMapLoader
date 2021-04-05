@@ -11,7 +11,6 @@ namespace MapLoader
         std::vector<std::string> fileNames;
         FileUtils::GetFilesInFolderPath("gtmap", basePath, fileNames);
 
-        std::sort(fileNames.begin(), fileNames.end());
         int i = 0;
         for (auto f : fileNames)
         {
@@ -20,5 +19,8 @@ namespace MapLoader
             maps[i].Load();
             i++;
         }
+
+        std::sort(maps.begin(), maps.end());
+
     }
 }
