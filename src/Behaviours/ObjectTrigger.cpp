@@ -1,38 +1,42 @@
 #include "Behaviours/ObjectTrigger.hpp"
 
-DEFINE_CLASS(MapLoader::ObjectTrigger);
+DEFINE_TYPE(MapLoader::ObjectTrigger);
+
+extern Logger& getLogger();
+using namespace UnityEngine;
 
 namespace MapLoader
 {
-    void ObjectTrigger::Awake()
+    void ObjectTrigger::ctor()
     {
-        static std::vector<const Il2CppClass*> gameObjectKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "GameObject")};
-        static Il2CppClass* listKlass = il2cpp_utils::GetClassFromName("System.Collections.Generic", "List`1");
-        static Il2CppClass* gameObjectListKlass = il2cpp_utils::MakeGeneric(listKlass, gameObjectKlass);
-        objectsToTrigger = *il2cpp_utils::New<List<Il2CppObject*>*>(gameObjectListKlass);
+        getLogger().info("trigger ctor");
+        objectsToTrigger = *il2cpp_utils::New<List<GameObject*>*>();
     }
 
     void ObjectTrigger::OnEnable()
     {
+        getLogger().info("trigger onEnable");
         for (int i = 0; i < objectsToTrigger->size; i++)
         {
-            Il2CppObject* objectToTrigger = objectsToTrigger->items->values[i];
-            il2cpp_utils::RunMethod(objectToTrigger, "SetActive", disableObject);
+            GameObject* objectToTrigger = objectsToTrigger->get_Item(i);
+
+            objectToTrigger->SetActive(!disableObject);
+            objectToTrigger->SetActive(disableObject);
         }
 
         triggered = false;
     }
 
-    void ObjectTrigger::Trigger(Il2CppObject* collider)
+    void ObjectTrigger::Trigger(Collider* collider)
     {
         if (triggered && onlyTriggerOnce)
             return;
         
         for (int i = 0; i < objectsToTrigger->size; i++)
         {
-            Il2CppObject* objectToTrigger = objectsToTrigger->items->values[i];
-            il2cpp_utils::RunMethod(objectToTrigger, "SetActive", disableObject);
-            il2cpp_utils::RunMethod(objectToTrigger, "SetActive", !disableObject);
+            GameObject* objectToTrigger = objectsToTrigger->get_Item(i);
+            objectToTrigger->SetActive(disableObject);
+            objectToTrigger->SetActive(!disableObject);
         }
         
 

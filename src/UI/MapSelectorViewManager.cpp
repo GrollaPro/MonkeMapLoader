@@ -4,7 +4,7 @@
 #include "monkecomputer/shared/GorillaUI.hpp"
 #include "monkecomputer/shared/EKeyboardKey.hpp"
 
-DEFINE_CLASS(MapLoader::MapSelectorViewManager);
+DEFINE_TYPE(MapLoader::MapSelectorViewManager);
 
 using namespace GorillaUI;
 

@@ -8,7 +8,7 @@
 #include "Behaviours/PreviewOrb.hpp"
 #include "monkecomputer/shared/KeyExtension.hpp"
 
-DEFINE_CLASS(MapLoader::MapSelectorView);
+DEFINE_TYPE(MapLoader::MapSelectorView);
 
 extern Logger& getLogger();
 
@@ -89,11 +89,23 @@ namespace MapLoader
     
     void MapSelectorView::DrawHeader()
     {
-        text += string_format("<color=#ffff00>== <color=#fdfdfd>Maps</color> ==</color> page [<] %d/%d [>]\n", ((UISelectionHandler*)pageSelectionHandler)->currentSelectionIndex, pageCount - 1);
+        text += string_format("<color=#ffff00>== <color=#fdfdfd>Maps</color> ==</color> page [<] %d/%d [>]\n", ((UISelectionHandler*)pageSelectionHandler)->currentSelectionIndex + 1, pageCount);
     }
     
     void MapSelectorView::DrawMaps()
     {
+        if (mapCount == 0)
+        {
+            text += "<size=40>\n\n";
+            text += "    You have 0 maps installed! this means that the mod is currently useless...\n";
+            text += "    Download maps from <color=#0000ff>monkemaphub.com</color>\n";
+            text += "    and drop them into QuestPatcher, or put them in the following filepath on your quest:\n";
+            text += "    <color=#fdfdfd>sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/MonkeMapLoader/CustomMaps</color>\n";
+            text += "\n";
+            text += "    Once you have put in these maps you either should restart the game, or use <color#fdfdfd>option 1</color> to reload the map list\n";
+            text += "</size>";
+            return;
+        }
         std::vector<MapInfo> infos = PageHelper::GetPage(MapList::get_maps(), MOD_PAGE_SIZE, ((UISelectionHandler*)pageSelectionHandler)->currentSelectionIndex);
         ((UISelectionHandler*)selectionHandler)->max = infos.size();
         ((UISelectionHandler*)selectionHandler)->currentSelectionIndex = ((UISelectionHandler*)selectionHandler)->currentSelectionIndex >= infos.size() ? infos.size() - 1 : ((UISelectionHandler*)selectionHandler)->currentSelectionIndex;
@@ -109,11 +121,8 @@ namespace MapLoader
     
     void MapSelectorView::OnKeyPressed(int key)
     {
-        getLogger().info("Key %d input, mapcount: %d", key, mapCount);
-
         if (mapCount == 0) return;
 
-        getLogger().info("check option 1");
         if (key == (int)EKeyboardKey::Option1)
         {
             MapList::Load();
@@ -129,7 +138,6 @@ namespace MapLoader
             }
         }
 
-        getLogger().info("check first letter");
         char letter;
         if (KeyExtension::TryParseLetter((EKeyboardKey)key, letter))
         {
@@ -161,7 +169,6 @@ namespace MapLoader
             }
         }
 
-        getLogger().info("check num");
         int num;
         if (KeyExtension::TryParseNumber((EKeyboardKey)key, num))
         {
@@ -192,23 +199,17 @@ namespace MapLoader
             }
         }
 
-        getLogger().info("check paging");
         if (
                 ((UISelectionHandler*)selectionHandler)->HandleKey((EKeyboardKey)key) ||
                 ((UISelectionHandler*)pageSelectionHandler)->HandleKey((EKeyboardKey)key)
             )
         {
-            getLogger().info("Orb needs to be updated");
             int index = ((UISelectionHandler*)selectionHandler)->currentSelectionIndex + (MOD_PAGE_SIZE * ((UISelectionHandler*)pageSelectionHandler)->currentSelectionIndex);
-            getLogger().info("Got index");
             if (index > mapCount - 1)
             { 
-                getLogger().info("clamped index");
                 index = mapCount - 1;
             }
-            getLogger().info("Changing orb");
             PreviewOrb::ChangeOrb(MapList::get_map(index));
-            getLogger().info("end of if");
             this->Redraw();
 
         }
@@ -217,8 +218,6 @@ namespace MapLoader
             this->Redraw();
         }
 
-        getLogger().info("Should redraw");
         this->Redraw();
-        getLogger().info("Done");
     }
 }

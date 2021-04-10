@@ -1,25 +1,23 @@
 #include "Behaviours/RoundEndActions.hpp"
 #include "Behaviours/MapLoader.hpp"
 
-DEFINE_CLASS(MapLoader::RoundEndActions);
+#include "UnityEngine/Resources.hpp"
+
+DEFINE_TYPE(MapLoader::RoundEndActions);
+
+using namespace UnityEngine;
 
 namespace MapLoader
 {
-    void RoundEndActions::Awake()
+    void RoundEndActions::ctor()
     {
-        static std::vector<const Il2CppClass*> gameObjectKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "GameObject")};
-        static Il2CppClass* listKlass = il2cpp_utils::GetClassFromName("System.Collections.Generic", "List`1");
-        static Il2CppClass* gameObjectListKlass = il2cpp_utils::MakeGeneric(listKlass, gameObjectKlass);
-        objectsToEnable = *il2cpp_utils::New<List<Il2CppObject*>*>(gameObjectListKlass);
-        objectsToDisable = *il2cpp_utils::New<List<Il2CppObject*>*>(gameObjectListKlass);
-        il2cpp_utils::RunMethod(objectsToEnable, "Clear");
-        il2cpp_utils::RunMethod(objectsToDisable, "Clear");
+        objectsToEnable = *il2cpp_utils::New<List<GameObject*>*>();
+        objectsToDisable = *il2cpp_utils::New<List<GameObject*>*>();
     }
 
     void RoundEndActions::RoundEnd()
     {
-        static std::vector<Il2CppClass*> actionsKlass = {classof(RoundEndActions*)};
-        Array<RoundEndActions*>* endActions = *il2cpp_utils::RunGenericMethod<Array<RoundEndActions*>*>("UnityEngine", "Resources", "FindObjectsOfTypeAll", actionsKlass);
+        Array<RoundEndActions*>* endActions = Resources::FindObjectsOfTypeAll<RoundEndActions*>();
         if (!endActions) return;
 
         for (int i = 0; i < endActions->Length(); i++)
@@ -28,14 +26,14 @@ namespace MapLoader
             getLogger().info("Found action %d", i);
             for (int j = 0; j < action->objectsToDisable->size; j++)
             {
-                il2cpp_utils::RunMethod(action->objectsToDisable->items->values[j], "SetActive", true);
-                il2cpp_utils::RunMethod(action->objectsToDisable->items->values[j], "SetActive", false);
+                action->objectsToDisable->items->values[j]->SetActive(true);
+                action->objectsToDisable->items->values[j]->SetActive(false);
             }
 
             for (int j = 0; j < action->objectsToEnable->size; j++)
             {
-                il2cpp_utils::RunMethod(action->objectsToEnable->items->values[j], "SetActive", false);
-                il2cpp_utils::RunMethod(action->objectsToEnable->items->values[j], "SetActive", true);
+                action->objectsToEnable->items->values[j]->SetActive(false);
+                action->objectsToEnable->items->values[j]->SetActive(true);
             }
 
             if (action->respawnOnRoundEnd)

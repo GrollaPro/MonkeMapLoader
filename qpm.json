@@ -32,6 +32,11 @@
       "id": "quest-cosmetic-loader",
       "versionRange": "*",
       "additionalData": {}
+    },
+    {
+      "id": "monkecodegen",
+      "versionRange": "*",
+      "additionalData": {}
     }
   ],
   "additionalData": {}

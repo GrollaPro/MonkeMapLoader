@@ -2,6 +2,7 @@
 
 #include <string>
 #include "Models/MapPackageInfo.hpp"
+#include "UnityEngine/Texture2D.hpp"
 namespace MapLoader
 {
     class MapInfo
@@ -10,7 +11,7 @@ namespace MapLoader
             bool operator<(const MapInfo& second) const;
             MapInfo(std::string filePath) : filePath(filePath) {};
             void Load();
-            Il2CppObject* LoadCubeMap();
+            UnityEngine::Texture2D* LoadCubeMap();
             std::string filePath = "";
             MapPackageInfo* packageInfo;
     };

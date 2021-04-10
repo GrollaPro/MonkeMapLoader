@@ -2,18 +2,21 @@
 
 #include "custom-types/shared/macros.hpp"
 #include "Behaviours/GorillaMapTriggerBase.hpp"
-#include "typedefs.h"
+#include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Collider.hpp"
+#include "beatsaber-hook/shared/utils/typedefs.h"
 
 DECLARE_CLASS_CODEGEN(MapLoader, ObjectTrigger, MapLoader::GorillaMapTriggerBase,
-    DECLARE_METHOD(void, Awake);
+    DECLARE_CTOR(ctor);
     DECLARE_METHOD(void, OnEnable);
-    DECLARE_METHOD(void, Trigger, Il2CppObject* collider);
-    DECLARE_INSTANCE_FIELD(List<Il2CppObject*>*, objectsToTrigger);
+    DECLARE_METHOD(void, Trigger, UnityEngine::Collider* collider);
+    DECLARE_INSTANCE_FIELD(List<UnityEngine::GameObject*>*, objectsToTrigger);
     DECLARE_INSTANCE_FIELD(bool, disableObject);
     DECLARE_INSTANCE_FIELD(bool, onlyTriggerOnce);
     DECLARE_INSTANCE_FIELD(bool, triggered);
+
     REGISTER_FUNCTION(ObjectTrigger,
-        REGISTER_METHOD(Awake);
+        REGISTER_METHOD(ctor);
         REGISTER_METHOD(OnEnable);
         REGISTER_METHOD(Trigger);
         REGISTER_FIELD(objectsToTrigger);

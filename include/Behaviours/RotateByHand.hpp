@@ -1,20 +1,24 @@
 #pragma once
 
 #include "custom-types/shared/macros.hpp"
-#include "typedefs.h"
 
-DECLARE_CLASS(MapLoader, RotateByHand, "UnityEngine", "MonoBehaviour", sizeof(Il2CppObject) + sizeof(void*),
+#include "UnityEngine/Vector3.hpp"
+#include "UnityEngine/Collider.hpp"
+#include "UnityEngine/Rigidbody.hpp"
+#include "UnityEngine/MonoBehaviour.hpp"
+
+DECLARE_CLASS_CODEGEN(MapLoader, RotateByHand, UnityEngine::MonoBehaviour,
     DECLARE_METHOD(void, Awake);
-    DECLARE_METHOD(void, OnTriggerEnter, Il2CppObject* collider);
-    DECLARE_METHOD(void, OnTriggerStay, Il2CppObject* collider);
-    DECLARE_METHOD(void, OnTriggerExit, Il2CppObject* collider);
-    DECLARE_METHOD(bool, CheckIfValid, Il2CppObject* collider);
-    DECLARE_METHOD(Vector3, GetVector, Il2CppObject* collider);
+    DECLARE_METHOD(void, OnTriggerEnter, UnityEngine::Collider* collider);
+    DECLARE_METHOD(void, OnTriggerStay, UnityEngine::Collider* collider);
+    DECLARE_METHOD(void, OnTriggerExit, UnityEngine::Collider* collider);
+    DECLARE_METHOD(bool, CheckIfValid, UnityEngine::Collider* collider);
+    DECLARE_METHOD(UnityEngine::Vector3, GetVector, UnityEngine::Collider* collider);
 
-    DECLARE_INSTANCE_FIELD(Vector3, midPoint);
+    DECLARE_INSTANCE_FIELD(UnityEngine::Vector3, midPoint);
     DECLARE_INSTANCE_FIELD(float, angle);
-    DECLARE_INSTANCE_FIELD(Vector3, startVector);
-    DECLARE_INSTANCE_FIELD(Il2CppObject*, rigidBody);
+    DECLARE_INSTANCE_FIELD(UnityEngine::Vector3, startVector);
+    DECLARE_INSTANCE_FIELD(UnityEngine::Rigidbody*, rigidBody);
     DECLARE_INSTANCE_FIELD(float, deltaAngle);
     DECLARE_INSTANCE_FIELD(float, previousAngle);
 

@@ -3,22 +3,21 @@
     "name": "Monke Map Loader",
     "id": "MonkeMapLoader",
     "author": "RedBrumbler",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "packageId": "com.AnotherAxiom.GorillaTag",
     "packageVersion": "1.0.4",
     "type": "Gameplay",
     "dependencies": [
         {
             "id": "MonkeComputer",
-            "version": "^1.0.3",
-            "downloadIfMissing": "https://github.com/RedBrumbler/MonkeComputer/releases/download/1.0.3/MonkeComputer.qmod"
+            "version": "^1.2.0",
+            "downloadIfMissing": "https://github.com/RedBrumbler/MonkeComputer/releases/latest/download/MonkeComputer.qmod"
         }
     ],
     "modFiles": [
         "libmonkemaploader.so"
     ],
     "libraryFiles": [
-        "libbeatsaber-hook_1_2_4.so"
     ],
     "fileCopies": [
         {

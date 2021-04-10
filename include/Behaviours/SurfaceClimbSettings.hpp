@@ -1,9 +1,9 @@
 #pragma once
 
 #include "custom-types/shared/macros.hpp"
-#include "Behaviours/GorillaMapTriggerBase.hpp"
+#include "UnityEngine/MonoBehaviour.hpp"
 
-DECLARE_CLASS(MapLoader, SurfaceClimbSettings, "UnityEngine", "MonoBehaviour", sizeof(Il2CppObject) + sizeof(void*),
+DECLARE_CLASS_CODEGEN(MapLoader, SurfaceClimbSettings, UnityEngine::MonoBehaviour,
     DECLARE_METHOD(void, Start);
     DECLARE_INSTANCE_FIELD(bool, unClimbable);
     DECLARE_INSTANCE_FIELD(float, slipPercentage);

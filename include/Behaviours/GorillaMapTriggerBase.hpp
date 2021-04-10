@@ -10,17 +10,20 @@ namespace MapLoader {
     };
 }
 
-DECLARE_CLASS(MapLoader, GorillaMapTriggerBase, "UnityEngine", "MonoBehaviour", sizeof(Il2CppObject) + sizeof(void*) + sizeof(MapLoader::TouchType), 
+#include "UnityEngine/Collider.hpp"
+#include "UnityEngine/MonoBehaviour.hpp"
 
-        DECLARE_METHOD(void, OnTriggerEnter, Il2CppObject* collider);
-        DECLARE_METHOD(void, OnTriggerStay, Il2CppObject* collider);
-        DECLARE_METHOD(void, OnTriggerExit, Il2CppObject* collider);
-        DECLARE_METHOD(void, RunTrigger, Il2CppObject* collider);
-        DECLARE_METHOD(bool, CheckColliderComponents, Il2CppObject* collider);
+DECLARE_CLASS_CODEGEN(MapLoader, GorillaMapTriggerBase, UnityEngine::MonoBehaviour, 
+
+        DECLARE_METHOD(void, OnTriggerEnter, UnityEngine::Collider* collider);
+        DECLARE_METHOD(void, OnTriggerStay, UnityEngine::Collider* collider);
+        DECLARE_METHOD(void, OnTriggerExit, UnityEngine::Collider* collider);
+        DECLARE_METHOD(void, RunTrigger, UnityEngine::Collider* collider);
+        DECLARE_METHOD(bool, CheckColliderComponents, UnityEngine::Collider* collider);
         DECLARE_INSTANCE_FIELD(float, Delay);
         DECLARE_INSTANCE_FIELD(float, touchedTime);
         DECLARE_INSTANCE_FIELD(bool, isTriggering);
-        DECLARE_INSTANCE_FIELD(Il2CppObject*, collider);
+        DECLARE_INSTANCE_FIELD(UnityEngine::Collider*, collider);
 
     public:
         TouchType touchType = TouchType::Any;

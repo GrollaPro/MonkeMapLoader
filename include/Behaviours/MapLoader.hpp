@@ -6,7 +6,12 @@
 
 
 #include "custom-types/shared/macros.hpp"
-#include "typedefs.h"
+
+#include "UnityEngine/Color.hpp"
+#include "UnityEngine/MonoBehaviour.hpp"
+#include "UnityEngine/AssetBundle.hpp"
+#include "UnityEngine/AsyncOperation.hpp"
+#include "UnityEngine/Transform.hpp"
 
 namespace MapLoader
 {
@@ -23,17 +28,17 @@ namespace MapLoader
         bool moveNext = false;
         LoadState loadState = LoadState::LoadingData;
         std::vector<uint8_t> data = {};
-        Il2CppObject* bundle = nullptr;
+        UnityEngine::AssetBundle* bundle = nullptr;
         Il2CppObject* root = nullptr;
     };
 }
 
-DECLARE_CLASS(MapLoader, Loader, "UnityEngine", "MonoBehaviour", sizeof(Il2CppObject) + sizeof(void*) + sizeof(MapLoadData),
-    DECLARE_STATIC_FIELD(Il2CppObject*, mapInstance);
+DECLARE_CLASS_CODEGEN(MapLoader, Loader, UnityEngine::MonoBehaviour,
+    DECLARE_STATIC_FIELD(UnityEngine::GameObject*, mapInstance);
     DECLARE_STATIC_FIELD(bool, isLoading);
     DECLARE_STATIC_FIELD(bool, isMoved);
 
-    DECLARE_METHOD(static void, ColorTreeTeleporter, Color color);
+    DECLARE_METHOD(static void, ColorTreeTeleporter, UnityEngine::Color color);
     DECLARE_METHOD(static void, JoinGame);
     DECLARE_METHOD(static void, ForceRespawn);
     DECLARE_METHOD(static void, ResetMapProperties);
@@ -45,12 +50,12 @@ DECLARE_CLASS(MapLoader, Loader, "UnityEngine", "MonoBehaviour", sizeof(Il2CppOb
     DECLARE_METHOD(void, LoadData);
     DECLARE_METHOD(void, LoadBundle);
     DECLARE_METHOD(void, LoadScene);
-    DECLARE_METHOD(static void, SceneComplete, void*, Il2CppObject* sceneLoadRequest);
+    DECLARE_METHOD(static void, SceneComplete, void*, UnityEngine::AsyncOperation* sceneLoadRequest);
     DECLARE_METHOD(void, InitializeMap);
     DECLARE_METHOD(void, InitializeGlobalData);
-    DECLARE_METHOD(void, ProcessMap, Il2CppObject* map);
-    DECLARE_METHOD(void, ProcessChildren, Il2CppObject* parent);
-    DECLARE_METHOD(void, SetupCollisions, Il2CppObject* child);
+    DECLARE_METHOD(void, ProcessMap, UnityEngine::GameObject* map);
+    DECLARE_METHOD(void, ProcessChildren, UnityEngine::Transform* parent);
+    DECLARE_METHOD(void, SetupCollisions, UnityEngine::GameObject* child);
 
     public:
         static inline std::string lobbyName = "";

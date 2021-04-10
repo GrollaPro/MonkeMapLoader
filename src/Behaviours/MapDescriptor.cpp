@@ -8,28 +8,34 @@
 #include "Behaviours/SurfaceClimbSettings.hpp"
 #include "Behaviours/RoundEndActions.hpp"
 
-DEFINE_CLASS(MapLoader::MapDescriptor);
+#include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Transform.hpp"
+#include "UnityEngine/UI/Text.hpp"
+
+DEFINE_TYPE(MapLoader::MapDescriptor);
 
 extern Logger& getLogger();
+
+using namespace UnityEngine;
+
+#define toMapIfContains(text, contains, map) \
+if (text.find(contains) != std::string::npos) map.push_back({gameObject, text})
 
 namespace MapLoader
 {
     using MapBehaviourRepresentation = struct MapBehaviourRepresentation{
-            Il2CppObject* first;
+            GameObject* first;
             std::string second;
         };
+
     using SerializeMap = std::vector<MapBehaviourRepresentation>; 
     using TeleporterMap = std::map<std::string, Teleporter*>;
     using TriggerMap = std::map<std::string, ObjectTrigger*>;
 
     void MapDescriptor::Initialize()
     {
-        static std::vector<Il2CppClass*> textKlass = {il2cpp_utils::GetClassFromName("UnityEngine.UI", "Text")};
-        Il2CppObject* go = *il2cpp_utils::RunMethod(this, "get_gameObject");
-        Array<Il2CppObject*>* textComponents = *il2cpp_utils::RunGenericMethod<Array<Il2CppObject*>*>(go, "GetComponentsInChildren", textKlass, true);
+        Array<UI::Text*>* textComponents = GetComponentsInChildren<UI::Text*>(true);
         
-        
-
         SerializeMap teleporters = {};
         SerializeMap teleportPoints = {};
         SerializeMap objectTriggers = {};
@@ -43,12 +49,12 @@ namespace MapLoader
         getLogger().info("Handling all Text Components");
         for (int i = 0; i < textComponents->Length(); i++)
         {
-            Il2CppObject* component = textComponents->values[i];
-            Il2CppString* serializedCS = *il2cpp_utils::RunMethod<Il2CppString*>(component, "get_text");
+            UI::Text* component = textComponents->values[i];
+            Il2CppString* serializedCS = component->get_text();
             std::string serialized = to_utf8(csstrtostr(serializedCS));
 
             if (serialized.find("{") == std::string::npos || serialized.find("}") == std::string::npos) continue;
-            Il2CppObject* gameObject = *il2cpp_utils::RunMethod(component, "get_gameObject");
+            GameObject* gameObject = component->get_gameObject();
 
             while (serialized.find("}, {") != std::string::npos)
             {
@@ -58,25 +64,26 @@ namespace MapLoader
                 serialized = serialized.erase(0, seperationpos + 3);
                 getLogger().error("serialized is now: \n%s", serialized.c_str());
                 getLogger().error("subObj: \n%s", subObj.c_str());
-                if (subObj.find("TeleporterName") != std::string::npos) teleporters.push_back({gameObject, subObj});
-                else if (subObj.find("TeleportPoint") != std::string::npos) teleportPoints.push_back({gameObject, subObj});
-                else if (subObj.find("ObjectTriggerName") != std::string::npos) objectTriggers.push_back({gameObject, subObj});
-                else if (subObj.find("TriggeredBy") != std::string::npos) triggerPoints.push_back({gameObject, subObj});
-                else if (subObj.find("TagZone") != std::string::npos) tagZones.push_back({gameObject, subObj});
-                else if (subObj.find("SurfaceClimbSettings") != std::string::npos) surfaces.push_back({gameObject, subObj});
-                else if (subObj.find("RoundEndActions") != std::string::npos) roundEndActions.push_back({gameObject, subObj});
-                else if (subObj.find("RoundEndAction") != std::string::npos) actionObjects.push_back({gameObject, subObj});
+
+                toMapIfContains(subObj, "TeleporterName", teleporters);
+                else toMapIfContains(subObj, "TeleportPoint", teleportPoints);
+                else toMapIfContains(subObj, "ObjectTriggerName", objectTriggers);
+                else toMapIfContains(subObj, "TriggeredBy", triggerPoints);
+                else toMapIfContains(subObj, "TagZone", tagZones);
+                else toMapIfContains(subObj, "SurfaceClimbSettings", surfaces);
+                else toMapIfContains(subObj, "RoundEndActions", roundEndActions);
+                else toMapIfContains(subObj, "RoundEndAction", actionObjects);
                 else getLogger().error("Could not find object type for object with textcomponent:\n%s", subObj.c_str());
             }
-
-            if (serialized.find("TeleporterName") != std::string::npos) teleporters.push_back({gameObject, serialized});
-            else if (serialized.find("TeleportPoint") != std::string::npos) teleportPoints.push_back({gameObject, serialized});
-            else if (serialized.find("ObjectTriggerName") != std::string::npos) objectTriggers.push_back({gameObject, serialized});
-            else if (serialized.find("TriggeredBy") != std::string::npos) triggerPoints.push_back({gameObject, serialized});
-            else if (serialized.find("TagZone") != std::string::npos) tagZones.push_back({gameObject, serialized});
-            else if (serialized.find("SurfaceClimbSettings") != std::string::npos) surfaces.push_back({gameObject, serialized});
-            else if (serialized.find("RoundEndActions") != std::string::npos) roundEndActions.push_back({gameObject, serialized});
-            else if (serialized.find("RoundEndAction") != std::string::npos) actionObjects.push_back({gameObject, serialized});
+            
+            toMapIfContains(serialized, "TeleporterName", teleporters);
+            else toMapIfContains(serialized, "TeleportPoint", teleportPoints);
+            else toMapIfContains(serialized, "ObjectTriggerName", objectTriggers);
+            else toMapIfContains(serialized, "TriggeredBy", triggerPoints);
+            else toMapIfContains(serialized, "TagZone", tagZones);
+            else toMapIfContains(serialized, "SurfaceClimbSettings", surfaces);
+            else toMapIfContains(serialized, "RoundEndActions", roundEndActions);
+            else toMapIfContains(serialized, "RoundEndAction", actionObjects);
             else getLogger().error("Could not find object type for object with textcomponent:\n%s", serialized.c_str());
         }
 
@@ -86,7 +93,7 @@ namespace MapLoader
         getLogger().info("Handling teleporters");
         for (auto t : teleporters)
         {
-            Teleporter* tele = *il2cpp_utils::RunGenericMethod<Teleporter*>(t.first, "AddComponent", teleporterKlass);
+            Teleporter* tele = t.first->AddComponent<Teleporter*>();
             rapidjson::Document doc;
             doc.Parse(t.second.c_str());
 
@@ -107,18 +114,18 @@ namespace MapLoader
         getLogger().info("Handling teleportPoints");
         for (auto t : teleportPoints)
         {
-            Il2CppObject* transform = *il2cpp_utils::RunMethod(t.first, "get_transform");
+            Transform* transform = t.first->get_transform();
             rapidjson::Document doc;
             doc.Parse(t.second.c_str());
 
             std::string teleporter = doc["TeleportPoint"].GetString();
 
-            il2cpp_utils::RunMethod(teleporterMap[teleporter]->teleportPoints, "Add", transform);
+            teleporterMap[teleporter]->teleportPoints->Add(transform);
         }
 
         static Il2CppString* treeHomeTargetObjectName = il2cpp_utils::createcsstr("TreeHomeTargetObject", il2cpp_utils::StringType::Manual);
-        Il2CppObject* treeHomeTargetObject = *il2cpp_utils::RunMethod("UnityEngine", "GameObject", "Find", treeHomeTargetObjectName);
-        Il2CppObject* treeHomeTransform = *il2cpp_utils::RunMethod(treeHomeTargetObject, "get_transform");
+        GameObject* treeHomeTargetObject = GameObject::Find(treeHomeTargetObjectName);
+        Transform* treeHomeTransform = treeHomeTargetObject->get_transform();
 
         // if there are 0 points, set type to treehouse
         for (auto t : teleporterMap)
@@ -127,17 +134,16 @@ namespace MapLoader
             if (pointCount == 0) 
             {
                 t.second->teleporterType = TeleporterType::Treehouse;
-                il2cpp_utils::RunMethod(t.second->teleportPoints, "Add", treeHomeTransform);
+                t.second->teleportPoints->Add(treeHomeTransform);
             }
         }
         
         // initialize object triggers
-        static std::vector<Il2CppClass*> triggerKlass = {classof(ObjectTrigger*)};
         TriggerMap triggerMap = {};
         getLogger().info("Handling objectTriggers");
         for (auto t : objectTriggers)
         {
-            ObjectTrigger* trigger = *il2cpp_utils::RunGenericMethod<ObjectTrigger*>(t.first, "AddComponent", triggerKlass);
+            ObjectTrigger* trigger = t.first->AddComponent<ObjectTrigger*>();
             rapidjson::Document doc;
             doc.Parse(t.second.c_str());
 
@@ -161,24 +167,22 @@ namespace MapLoader
             doc.Parse(t.second.c_str());
             std::string trigger = doc["TriggeredBy"].GetString();
             
-            il2cpp_utils::RunMethod(triggerMap[trigger]->objectsToTrigger, "Add", t.first);
+            triggerMap[trigger]->objectsToTrigger->Add(t.first);
             getLogger().info("\t%s", trigger.c_str());
         }
 
         // initialize tagZones
         getLogger().info("Handling TagZones");
-        static std::vector<Il2CppClass*> tagZoneKlass = {classof(TagZone*)};
         for (auto t : tagZones)
         {
-            TagZone* zone = *il2cpp_utils::RunGenericMethod<TagZone*>(t.first, "AddComponent", tagZoneKlass);
+            TagZone* zone = t.first->AddComponent<TagZone*>();
         }
 
         // initialize surfaces
         getLogger().info("Handling Surfaces");
-        static std::vector<Il2CppClass*> surfaceKlass = {classof(SurfaceClimbSettings*)};
         for (auto s : surfaces)
         {
-            SurfaceClimbSettings* surface = *il2cpp_utils::RunGenericMethod<SurfaceClimbSettings*>(s.first, "AddComponent", surfaceKlass);
+            SurfaceClimbSettings* surface = s.first->AddComponent<SurfaceClimbSettings*>();
             rapidjson::Document doc;
             doc.Parse(s.second.c_str());
             
@@ -191,11 +195,10 @@ namespace MapLoader
         }
         
         getLogger().info("Handling Round end");
-        static std::vector<Il2CppClass*> roundEndKlass = {classof(RoundEndActions*)};
         std::vector<RoundEndActions*> endActions = {};
         for (auto r : roundEndActions)
         {
-            RoundEndActions* roundEndAction = *il2cpp_utils::RunGenericMethod<RoundEndActions*>(r.first, "AddComponent", roundEndKlass);
+            RoundEndActions* roundEndAction = r.first->AddComponent<RoundEndActions*>();
             rapidjson::Document doc;
             doc.Parse(r.second.c_str());
 
@@ -214,11 +217,11 @@ namespace MapLoader
             {
                 if (action == "Disable")
                 {
-                    il2cpp_utils::RunMethod(endAction->objectsToDisable, "Add", a.first);
+                    endAction->objectsToDisable->Add(a.first);
                 }
                 else if (action == "Enable")
                 {
-                    il2cpp_utils::RunMethod(endAction->objectsToEnable, "Add", a.first);
+                    endAction->objectsToEnable->Add(a.first);
                 }
             }
         }

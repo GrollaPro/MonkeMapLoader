@@ -1,24 +1,28 @@
 #include "Behaviours/SurfaceClimbSettings.hpp"
 
-DEFINE_CLASS(MapLoader::SurfaceClimbSettings);
+#include "UnityEngine/GameObject.hpp"
+#include "GorillaLocomotion/Surface.hpp"
+
+DEFINE_TYPE(MapLoader::SurfaceClimbSettings);
+
+using namespace UnityEngine;
+using namespace GorillaLocomotion;
 
 namespace MapLoader
 {
     void SurfaceClimbSettings::Start()
     {
-        static std::vector<Il2CppClass*> klass = {il2cpp_utils::GetClassFromName("GorillaLocomotion", "Surface")};
-        Il2CppObject* go = *il2cpp_utils::RunMethod(this, "get_gameObject");
-        Il2CppObject* surface = *il2cpp_utils::RunGenericMethod(go, "GetComponent", klass);
+        Surface* surface = GetComponent<Surface*>();
 
         if (!surface)
         {
-            surface = *il2cpp_utils::RunGenericMethod(go, "AddComponent", klass);
+            surface = get_gameObject()->AddComponent<Surface*>();
         }
 
         if (unClimbable)
-            il2cpp_utils::SetFieldValue(surface, "slipPercentage", 1.0f);
+            surface->slipPercentage = 1.0f;
         else 
-            il2cpp_utils::SetFieldValue(surface, "slipPercentage", slipPercentage);
+            surface->slipPercentage = slipPercentage;
 
     }
 }

@@ -1,9 +1,11 @@
 #include "Models/MapInfo.hpp"
 
-#include "libzip/shared/zip.h"
+#include "zip/shared/zip.h"
 #include "beatsaber-hook/shared/utils/utils.h"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "Utils/FileUtils.hpp"
+
+using namespace UnityEngine;
 
 std::string toLower(std::string aString)
 {
@@ -47,10 +49,10 @@ namespace MapLoader
         zip_close(z);
     }
 
-    Il2CppObject* MapInfo::LoadCubeMap()
+    Texture2D* MapInfo::LoadCubeMap()
     {
-        if (packageInfo->previewCubeMap) return packageInfo->previewCubeMap;
-        using LoadImage = function_ptr_t<unsigned int, Il2CppObject*, Array<uint8_t>*, bool>;
+        if (packageInfo->previewCubeMap) return (Texture2D*)packageInfo->previewCubeMap;
+        using LoadImage = function_ptr_t<unsigned int, Texture2D*, Array<uint8_t>*, bool>;
         static LoadImage loadImage = reinterpret_cast<LoadImage>(il2cpp_functions::resolve_icall("UnityEngine.ImageConversion::LoadImage"));
 
         int err = 0;
@@ -61,23 +63,21 @@ namespace MapLoader
         zip_stat(z, packageInfo->config.cubeMapImagePath.c_str(), 0, &st);
 
         zip_file* f = zip_fopen(z, st.name, 0);
-        char* cubeMap = new char[st.size];
-        zip_fread(f, cubeMap, st.size);
+        
+        uint8_t* cubeMap = new uint8_t[st.size];
+        static_assert(sizeof(char) == sizeof(uint8_t));
+        zip_fread(f, (char*)cubeMap, st.size);
         zip_fclose(f);
         zip_close(z);
-        std::vector<uint8_t> byteVector;
-        for (int i = 0; i < st.size; i++)
-        {
-            byteVector.push_back((uint8_t)cubeMap[i]);
-        }
-        Array<uint8_t>* byteArray = il2cpp_utils::vectorToArray(byteVector);
-        static Il2CppClass* textureKlass = il2cpp_utils::GetClassFromName("UnityEngine", "Texture2D");
 
-        Il2CppObject* texture = *il2cpp_utils::New(textureKlass, 0, 0, 4, false);
+        std::vector<uint8_t> byteVector(cubeMap, cubeMap + st.size);
+        Array<uint8_t>* byteArray = il2cpp_utils::vectorToArray(byteVector);
+
+        Texture2D* texture = Texture2D::New_ctor(0, 0, 4, false);
         loadImage(texture, byteArray, false);
         delete[](cubeMap);
         packageInfo->previewCubeMap = texture;
-        return packageInfo->previewCubeMap;
+        return texture;
     }
 
     bool MapInfo::operator<(const MapInfo& second) const

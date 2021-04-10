@@ -1,12 +1,20 @@
 #include "Behaviours/GorillaMapTriggerBase.hpp"
 
-DEFINE_CLASS(MapLoader::GorillaMapTriggerBase);
+#include "UnityEngine/Time.hpp"
+#include "UnityEngine/GameObject.hpp"
+
+#include "GlobalNamespace/GorillaTriggerColliderHandIndicator.hpp"
+#include "GorillaLocomotion/Player.hpp"
+
+DEFINE_TYPE(MapLoader::GorillaMapTriggerBase);
 
 extern Logger& getLogger();
 
+using namespace UnityEngine;
+
 namespace MapLoader
 {
-    void GorillaMapTriggerBase::OnTriggerEnter(Il2CppObject* collider)
+    void GorillaMapTriggerBase::OnTriggerEnter(Collider* collider)
     {
         if(isTriggering) return;
         if (!CheckColliderComponents(collider)) return;
@@ -21,13 +29,12 @@ namespace MapLoader
         else touchedTime = 0.0f;
     }
 
-    void GorillaMapTriggerBase::OnTriggerStay(Il2CppObject* collider)
+    void GorillaMapTriggerBase::OnTriggerStay(Collider* collider)
     {
         if (Delay == 0.0f) return;
         if (!CheckColliderComponents(collider)) return;
 
-        float fixedDeltaTime = *il2cpp_utils::RunMethod<float>("UnityEngine", "Time", "get_fixedDeltaTime");
-        touchedTime += fixedDeltaTime;
+        touchedTime += Time::get_fixedDeltaTime();
 
         if (touchedTime >= Delay)
         {
@@ -36,23 +43,23 @@ namespace MapLoader
         }
     }
 
-    void GorillaMapTriggerBase::OnTriggerExit(Il2CppObject* collider)
+    void GorillaMapTriggerBase::OnTriggerExit(Collider* collider)
     {
         if (!CheckColliderComponents(collider)) return;
         if (this->collider != nullptr && this->collider != collider) return;
 
         isTriggering = false;
-        collider = nullptr;
+        this->collider = nullptr;
     }
 
-    bool GorillaMapTriggerBase::CheckColliderComponents(Il2CppObject* collider)
+    bool GorillaMapTriggerBase::CheckColliderComponents(Collider* collider)
     {
         static std::vector<Il2CppClass*> gorillaTriggerColliderHandIndicatorKlass = {il2cpp_utils::GetClassFromName("", "GorillaTriggerColliderHandIndicator")};
         static std::vector<Il2CppClass*> playerKlass = {il2cpp_utils::GetClassFromName("GorillaLocomotion", "Player")};
 
-        Il2CppObject* colliderGO = *il2cpp_utils::RunMethod(collider, "get_gameObject");
-        Il2CppObject* handIndicator = *il2cpp_utils::RunGenericMethod(colliderGO, "GetComponentInParent", gorillaTriggerColliderHandIndicatorKlass);
-        Il2CppObject* player = *il2cpp_utils::RunGenericMethod(colliderGO, "GetComponentInParent", playerKlass);
+        GameObject* colliderGO = collider->get_gameObject();
+        GlobalNamespace::GorillaTriggerColliderHandIndicator* handIndicator = colliderGO->GetComponentInParent<GlobalNamespace::GorillaTriggerColliderHandIndicator*>();
+        GorillaLocomotion::Player* player = colliderGO->GetComponentInParent<GorillaLocomotion::Player*>();
 
         switch (touchType)
         {
@@ -74,7 +81,7 @@ namespace MapLoader
         return true;
     }
 
-    void GorillaMapTriggerBase::RunTrigger(Il2CppObject* collider)
+    void GorillaMapTriggerBase::RunTrigger(Collider* collider)
     {
         auto* trigger = il2cpp_functions::class_get_method_from_name(il2cpp_utils::ExtractClass(this), "Trigger", 1);
         if (trigger)

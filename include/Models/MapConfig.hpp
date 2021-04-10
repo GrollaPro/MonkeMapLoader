@@ -1,9 +1,9 @@
 #pragma once
 
-#include "typedefs.h"
 #include <string>
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
 
+#include "UnityEngine/Color.hpp"
 
 namespace MapLoader
 {
@@ -19,7 +19,7 @@ namespace MapLoader
                 float r = color["r"].GetFloat();
                 float g = color["g"].GetFloat();
                 float b = color["b"].GetFloat();
-                mapColor = (Color){r, g, b};
+                mapColor = UnityEngine::Color(r, g, b);
                 gravity = val.HasMember("gravity") ? val["gravity"].GetFloat() : -9.8f;
 
                 guid = val.HasMember("guid") ? val["guid"].GetString() : "";
@@ -28,7 +28,7 @@ namespace MapLoader
 
             std::string imagePath = "";
             std::string cubeMapImagePath = "";
-            Color mapColor = {1.0f, 1.0f, 1.0f};
+            UnityEngine::Color mapColor = {1.0f, 1.0f, 1.0f};
             float gravity = -9.8f;
             std::string guid = "";
             int version = 0;

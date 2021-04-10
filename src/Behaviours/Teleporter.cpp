@@ -4,24 +4,25 @@
 #include "Behaviours/MapLoader.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-type-check.hpp"
 
-DEFINE_CLASS(MapLoader::Teleporter);
+#include "UnityEngine/GameObject.hpp"
+
+DEFINE_TYPE(MapLoader::Teleporter);
+
+using namespace UnityEngine;
 
 namespace MapLoader
 {
-    void Teleporter::Awake()
+    void Teleporter::ctor()
     {
-        static std::vector<const Il2CppClass*> transformKlass = {il2cpp_utils::GetClassFromName("UnityEngine", "Transform")};
-        static Il2CppClass* listKlass = il2cpp_utils::GetClassFromName("System.Collections.Generic", "List`1");
-        static Il2CppClass* transformListKlass = il2cpp_utils::MakeGeneric(listKlass, transformKlass);
-        teleportPoints = *il2cpp_utils::New<List<Il2CppObject*>*>(transformListKlass);
-        il2cpp_utils::RunMethod(teleportPoints, "Clear");
+        teleportPoints = *il2cpp_utils::New<List<Transform*>*>();
+        teleportPoints->Clear();
 
         joinGameOnTeleport = false;
         isTeleporting = false;
         tagOnTeleport = false;
     }
 
-    void Teleporter::Trigger(Il2CppObject* collider)
+    void Teleporter::Trigger(Collider* collider)
     {
         if (isTeleporting)
             return;
@@ -35,16 +36,16 @@ namespace MapLoader
         if (teleporterType == TeleporterType::Map)
         {
             static Il2CppString* spawnPointContainerName = il2cpp_utils::createcsstr("SpawnPointContainer", il2cpp_utils::StringType::Manual);
-            Il2CppObject* spawnPointContainer = *il2cpp_utils::RunMethod("UnityEngine", "GameObject", "Find", spawnPointContainerName);
-            Il2CppObject* containerTransform = *il2cpp_utils::RunMethod(spawnPointContainer, "get_transform");
+            GameObject* spawnPointContainer = GameObject::Find(spawnPointContainerName);
+            Transform* containerTransform = spawnPointContainer->get_transform();
 
-            int childCount = *il2cpp_utils::RunMethod<int>(containerTransform, "get_childCount");
-            il2cpp_utils::RunMethod(teleportPoints, "Clear");
+            int childCount = containerTransform->get_childCount();
+            teleportPoints->Clear();
             getLogger().info("Found %d children to teleport to!", childCount);
             for (int i = 0; i < childCount; i++)
             {
-                Il2CppObject* child = *il2cpp_utils::RunMethod(containerTransform, "GetChild", i);
-                il2cpp_utils::RunMethod(teleportPoints, "Add", child);
+                Transform* child = containerTransform->GetChild(i);
+                teleportPoints->Add(child);
             }
         }
 
@@ -54,9 +55,9 @@ namespace MapLoader
             {
                 getLogger().info("Even after trying to add spawnpoints, the array was empty");
                 static Il2CppString* treeHomeTargetObjectName = il2cpp_utils::createcsstr("TreeHomeTargetObject", il2cpp_utils::StringType::Manual);
-                Il2CppObject* treeHomeTargetObject = *il2cpp_utils::RunMethod("UnityEngine", "GameObject", "Find", treeHomeTargetObjectName);
-                Il2CppObject* treeHomeTransform = *il2cpp_utils::RunMethod(treeHomeTargetObject, "get_transform");
-                il2cpp_utils::RunMethod(teleportPoints, "Add", treeHomeTransform);
+                GameObject* treeHomeTargetObject = GameObject::Find(treeHomeTargetObjectName);
+                Transform* treeHomeTransform = treeHomeTargetObject->get_transform();
+                teleportPoints->Add(treeHomeTransform);
             }
             else 
             {
@@ -66,7 +67,7 @@ namespace MapLoader
         }
 
         int index = teleportPoints->size > 1 ? rand() % teleportPoints->size : 0;
-        Il2CppObject* dest = teleportPoints->items->values[index];
+        Transform* dest = teleportPoints->items->values[index];
         
         // insttead of telepporting here
 

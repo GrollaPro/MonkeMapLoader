@@ -1,17 +1,19 @@
 #pragma once
-#include "typedefs.h"
+
+#include "UnityEngine/Vector3.hpp"
+#include "UnityEngine/GameObject.hpp"
 
 namespace MapLoader
 {
     class GlobalData
     {
         public: 
-            Vector3 get_origin()
+            UnityEngine::Vector3 get_origin()
             {
                 return origin;
             }
 
-            void set_origin(Vector3 value)
+            void set_origin(UnityEngine::Vector3 value)
             {
                 if (
                     origin.x == value.x &&
@@ -25,17 +27,17 @@ namespace MapLoader
                 customOrigin.y += 54.0f;
             }
 
-            Vector3 treeOrigin = {0.0f, 0.0f, 0.0f};
+            UnityEngine::Vector3 treeOrigin = {0.0f, 0.0f, 0.0f};
 
-            Il2CppObject* bigTreeTeleportToMap = nullptr;
+            UnityEngine::GameObject* bigTreeTeleportToMap = nullptr;
             
-            Il2CppObject* bigTreePoint = nullptr;
+            UnityEngine::GameObject* bigTreePoint = nullptr;
 
-            Il2CppObject* fallEmergencyTeleport = nullptr;
+            UnityEngine::GameObject* fallEmergencyTeleport = nullptr;
 
             bool isLegacyMap = false;
         private:
-            Vector3 origin = {0.0f, 0.0f, 0.0f};
-            Vector3 customOrigin = {0.0f, 54.0f, 0.0f};
+            UnityEngine::Vector3 origin = {0.0f, 0.0f, 0.0f};
+            UnityEngine::Vector3 customOrigin = {0.0f, 54.0f, 0.0f};
     };
 }

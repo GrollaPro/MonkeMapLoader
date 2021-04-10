@@ -3,7 +3,7 @@
 #include "Behaviours/MapLoader.hpp"
 #include "UI/MapSelectorViewManager.hpp"
 
-DEFINE_CLASS(MapLoader::MapView);
+DEFINE_TYPE(MapLoader::MapView);
 
 extern Logger& getLogger();
 
