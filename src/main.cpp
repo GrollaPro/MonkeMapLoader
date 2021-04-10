@@ -58,7 +58,6 @@
 
 #include "ExitGames/Client/Photon/SendOptions.hpp"
 
-#include "System/Collections/Generic/List_1.hpp"
 ModInfo modInfo;
 
 Logger& getLogger()
