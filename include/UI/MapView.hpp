@@ -16,7 +16,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, MapView, GorillaUI::Components::View,
     DECLARE_INSTANCE_FIELD(bool, loaded);
     DECLARE_INSTANCE_FIELD(void*, mapInfo);
 
-    REGISTER_FUNCTION(MapView,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Awake);
         REGISTER_METHOD(Load);
         REGISTER_METHOD(DidActivate);

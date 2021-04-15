@@ -19,7 +19,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, PreviewOrb, UnityEngine::MonoBehaviour,
         static inline PreviewOrb* instance = nullptr;
         static void ChangeOrb(UnityEngine::Color color, UnityEngine::Texture2D* texture);
         static void ChangeOrb(MapInfo& info);
-    REGISTER_FUNCTION(PreviewOrb,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Start);
     )
 )

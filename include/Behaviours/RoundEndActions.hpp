@@ -18,7 +18,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, RoundEndActions, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(List<UnityEngine::GameObject*>*, objectsToEnable);
     DECLARE_INSTANCE_FIELD(List<UnityEngine::GameObject*>*, objectsToDisable);
 
-    REGISTER_FUNCTION(RoundEndActions,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(ctor);
         REGISTER_METHOD(RoundEnd);
         REGISTER_FIELD(respawnOnRoundEnd);

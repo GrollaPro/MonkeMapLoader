@@ -8,7 +8,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, SurfaceClimbSettings, UnityEngine::MonoBehaviou
     DECLARE_INSTANCE_FIELD(bool, unClimbable);
     DECLARE_INSTANCE_FIELD(float, slipPercentage);
 
-    REGISTER_FUNCTION(SurfaceClimbSettings,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Start);
         REGISTER_FIELD(unClimbable);
         REGISTER_FIELD(slipPercentage);

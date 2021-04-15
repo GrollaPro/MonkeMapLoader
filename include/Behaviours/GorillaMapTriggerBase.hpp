@@ -28,7 +28,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, GorillaMapTriggerBase, UnityEngine::MonoBehavio
     public:
         TouchType touchType = TouchType::Any;
 
-    REGISTER_FUNCTION(GorillaMapTriggerBase,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(OnTriggerEnter);
         REGISTER_METHOD(OnTriggerStay);
         REGISTER_METHOD(OnTriggerExit);

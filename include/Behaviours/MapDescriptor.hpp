@@ -6,7 +6,7 @@
 DECLARE_CLASS_CODEGEN(MapLoader, MapDescriptor, UnityEngine::MonoBehaviour,
         DECLARE_METHOD(void, Initialize);
         DECLARE_INSTANCE_FIELD(float, gravity);
-    REGISTER_FUNCTION(MapDescriptor,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Initialize);
         REGISTER_FIELD(gravity);
     )

@@ -19,7 +19,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, Player, UnityEngine::MonoBehaviour,
     
     public:
         static inline Player* instance = nullptr;
-    REGISTER_FUNCTION(Player,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Start);
         REGISTER_METHOD(TeleportPlayer);
         REGISTER_FIELD(isTeleporting);

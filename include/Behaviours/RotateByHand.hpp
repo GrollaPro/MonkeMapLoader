@@ -22,7 +22,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, RotateByHand, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(float, deltaAngle);
     DECLARE_INSTANCE_FIELD(float, previousAngle);
 
-    REGISTER_FUNCTION(RotateByHand,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Awake);
         REGISTER_METHOD(OnTriggerEnter);
         REGISTER_METHOD(OnTriggerStay);

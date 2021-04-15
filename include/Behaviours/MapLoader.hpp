@@ -66,7 +66,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, Loader, UnityEngine::MonoBehaviour,
     private:
         MapLoadData mapLoadData;
 
-    REGISTER_FUNCTION(Loader,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Awake);
         REGISTER_METHOD(Update);
         REGISTER_METHOD(UnloadMap);

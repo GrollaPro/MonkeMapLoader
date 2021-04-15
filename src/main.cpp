@@ -78,7 +78,7 @@ MAKE_HOOK_OFFSETLESS(Player_Awake, void, GorillaLocomotion::Player* self)
     self->get_gameObject()->AddComponent<MapLoader::Player*>();
 }
 
-MAKE_HOOK_OFFSETLESS(GorillaComputer_Start, void, Il2CppObject* self)
+MAKE_HOOK_OFFSETLESS(GorillaComputer_Start, void, GlobalNamespace::GorillaComputer* self)
 {
     GorillaComputer_Start(self);
     MapList::Load();

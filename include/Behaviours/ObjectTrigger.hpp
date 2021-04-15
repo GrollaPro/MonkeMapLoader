@@ -15,7 +15,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, ObjectTrigger, MapLoader::GorillaMapTriggerBase
     DECLARE_INSTANCE_FIELD(bool, onlyTriggerOnce);
     DECLARE_INSTANCE_FIELD(bool, triggered);
 
-    REGISTER_FUNCTION(ObjectTrigger,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(ctor);
         REGISTER_METHOD(OnEnable);
         REGISTER_METHOD(Trigger);

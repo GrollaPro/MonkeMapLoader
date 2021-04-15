@@ -18,7 +18,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, MapSelectorView, GorillaUI::Components::View,
     DECLARE_INSTANCE_FIELD(void*, selectionHandler);
     DECLARE_INSTANCE_FIELD(void*, pageSelectionHandler);
     
-    REGISTER_FUNCTION(MapSelectorView,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(Awake);
         REGISTER_METHOD(ShowMap);
         REGISTER_METHOD(DidActivate);

@@ -12,7 +12,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, MapSelectorViewManager, GorillaUI::Components::
     
     DECLARE_INSTANCE_FIELD(GorillaUI::Components::View*, listView);
     
-    REGISTER_FUNCTION(MapSelectorViewManager,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(DidActivate);
         REGISTER_METHOD(NotifyOfKeyPress);
         REGISTER_METHOD(BackButtonWasPressed);

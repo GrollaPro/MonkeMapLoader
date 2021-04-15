@@ -27,7 +27,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, Teleporter, MapLoader::GorillaMapTriggerBase,
     public:
         TeleporterType teleporterType = TeleporterType::Normal;
 
-    REGISTER_FUNCTION(Teleporter,
+    REGISTER_FUNCTION(
         REGISTER_METHOD(ctor);
         REGISTER_METHOD(Trigger);
         REGISTER_METHOD(TeleportPlayer);
