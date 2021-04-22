@@ -17,11 +17,13 @@
 #include "UnityEngine/BoxCollider.hpp"
 #include "UnityEngine/Collider.hpp"
 #include "UnityEngine/Renderer.hpp"
+#include "UnityEngine/MeshRenderer.hpp"
 #include "UnityEngine/Material.hpp"
 #include "UnityEngine/SceneManagement/Scene.hpp"
 #include "UnityEngine/SceneManagement/LoadSceneMode.hpp"
 #include "UnityEngine/SceneManagement/LoadSceneParameters.hpp"
 #include "UnityEngine/SceneManagement/LocalPhysicsMode.hpp"
+#include "Utils/LightingUtils.hpp"
 
 DEFINE_TYPE(MapLoader::Loader);
 
@@ -59,6 +61,8 @@ namespace MapLoader
             case LoadState::InitializingMap:
                 InitializeMap();
                 break;
+            case LoadState::FixLighting:
+                FixLighting();
             default:
                 break;
         }
@@ -112,6 +116,14 @@ namespace MapLoader
             std::string treeTeleporterPath = "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/MonkeMapLoader/Teleporter";
             auto* loader = new CosmeticLoader(treeTeleporterPath, [&](std::string name, Il2CppObject* teleporter){
                 globalData->bigTreeTeleportToMap = (GameObject*)teleporter;
+                Vector3 pos = globalData->bigTreeTeleportToMap->get_transform()->get_position();
+                pos.z += 2.9f;
+                pos.y -= 0.05f;
+                globalData->bigTreeTeleportToMap->get_transform()->set_position(pos);
+
+                Vector3 rotate(0.0f, 20.0f, 0.0f);
+
+                globalData->bigTreeTeleportToMap->get_transform()->Rotate(rotate);
             }, "_Teleporter", il2cpp_utils::GetSystemType("UnityEngine", "GameObject"));
             globalData->bigTreeTeleportToMap->set_layer(MASKLAYER_PLAYERTRIGGER);
             Object::DontDestroyOnLoad(globalData->bigTreeTeleportToMap);
@@ -466,6 +478,9 @@ namespace MapLoader
         {
             lobbyName = mapLoadData.info.packageInfo->descriptor.author + "_" + mapLoadData.info.packageInfo->descriptor.mapName;
         }
+
+        mapLoadData.loadState = LoadState::FixLighting;
+        mapLoadData.moveNext = true;
     }
 
     void Loader::ProcessMap(GameObject* map)
@@ -589,6 +604,21 @@ namespace MapLoader
             {
                 collider->set_isTrigger(true);
                 child->set_layer(MASKLAYER_HANDTRIGGER);
+            }
+        }
+    }
+
+    void Loader::FixLighting()
+    {
+        Array<MeshRenderer*>* renderers = mapInstance->GetComponentsInChildren<MeshRenderer*>();
+
+        for (int i = 0; i < renderers->Length(); i++)
+        {
+            Array<Material*>* materials = renderers->values[i]->get_materials();
+
+            for (int j = 0; j < materials->Length(); j++)
+            {
+                LightingUtils::SetLightingStrength(materials->values[j], 0.25f);
             }
         }
     }

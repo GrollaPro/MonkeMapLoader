@@ -19,7 +19,8 @@ namespace MapLoader
         LoadingData,
         LoadingBundle,
         LoadingScene,
-        InitializingMap
+        InitializingMap,
+        FixLighting
     };
 
     struct MapLoadData
@@ -56,6 +57,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, Loader, UnityEngine::MonoBehaviour,
     DECLARE_METHOD(void, ProcessMap, UnityEngine::GameObject* map);
     DECLARE_METHOD(void, ProcessChildren, UnityEngine::Transform* parent);
     DECLARE_METHOD(void, SetupCollisions, UnityEngine::GameObject* child);
+    DECLARE_METHOD(void, FixLighting);
 
     public:
         static inline std::string lobbyName = "";
@@ -84,6 +86,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, Loader, UnityEngine::MonoBehaviour,
         REGISTER_METHOD(ProcessMap);
         REGISTER_METHOD(ProcessChildren);
         REGISTER_METHOD(SetupCollisions);
+        REGISTER_METHOD(FixLighting);
         REGISTER_FIELD(mapInstance);
         REGISTER_FIELD(isLoading);
         REGISTER_FIELD(isMoved);
