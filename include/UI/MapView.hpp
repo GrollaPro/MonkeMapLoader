@@ -15,6 +15,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, MapView, GorillaUI::Components::View,
     DECLARE_METHOD(void, OnKeyPressed, int key);
     DECLARE_INSTANCE_FIELD(bool, loaded);
     DECLARE_INSTANCE_FIELD(void*, mapInfo);
+    DECLARE_INSTANCE_FIELD(bool, isUpdated);
 
     REGISTER_FUNCTION(
         REGISTER_METHOD(Awake);
@@ -26,5 +27,6 @@ DECLARE_CLASS_CODEGEN(MapLoader, MapView, GorillaUI::Components::View,
         REGISTER_METHOD(OnKeyPressed);
         REGISTER_FIELD(loaded);
         REGISTER_FIELD(mapInfo);
+        REGISTER_FIELD(isUpdated);
     )
 )

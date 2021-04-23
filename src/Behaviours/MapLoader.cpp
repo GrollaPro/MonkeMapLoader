@@ -40,6 +40,7 @@ namespace MapLoader
     GameObject* Loader::mapInstance = nullptr;
     bool Loader::isLoading = false;
     bool Loader::isMoved = false;
+    
     void Loader::Awake()
     {}
 

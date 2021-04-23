@@ -2,17 +2,21 @@
 #include "monkecomputer/shared/ViewLib/CustomComputer.hpp"
 #include "Behaviours/MapLoader.hpp"
 #include "UI/MapSelectorViewManager.hpp"
+#include "cpp-semver/include/cpp-semver.hpp"
+#include "static-defines.hpp"
 
 DEFINE_TYPE(MapLoader::MapView);
 
 extern Logger& getLogger();
 
 using namespace GorillaUI;
+static std::string pluginVersion = PLUGIN_VERSION;
 
 namespace MapLoader
 {
     void MapView::Awake()
     {
+        isUpdated = false;
         loaded = false;
         mapInfo = nullptr;
     }
@@ -20,6 +24,9 @@ namespace MapLoader
     void MapView::DidActivate(bool firstActivation)
     {
         loaded = false;
+
+        // check wether the map plugin version is higher than the map info 
+        isUpdated = mapInfo ? semver::satisfies(pluginVersion, "^" + ((MapInfo*)mapInfo)->packageInfo->androidRequiredVersion) : false;
         Redraw();
     }
 
@@ -30,9 +37,8 @@ namespace MapLoader
             return;
         }
         
-        static std::vector<Il2CppClass*> loaderKlass = {classof(Loader*)};
-        Loader* loader = *il2cpp_utils::RunGenericMethod<Loader*>("UnityEngine", "Object", "FindObjectOfType", loaderKlass);
-        loader->LoadMap(*(MapInfo*)mapInfo);
+        Loader* loader = Object::FindObjectOfType<Loader*>();
+        if (loader) loader->LoadMap(*(MapInfo*)mapInfo);
     }
 
     void MapView::Redraw()
@@ -144,15 +150,21 @@ namespace MapLoader
     {
         if (!mapInfo) return;
         text += "\n<size=60>";
-        text += string_format("  Author: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.author.c_str());
-        text += string_format("  Map Name: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.mapName.c_str());
-        text += string_format("  Description: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.description.c_str());
+        text += string_format("   Author: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.author.c_str());
+        text += string_format("   Map Name: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.mapName.c_str());
+        text += string_format("   Description: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.description.c_str());
         text += "\n</size>";
+
+        if (!isUpdated) // if map is of newver version than the maploader
+        {
+            text += "\n  Your map loader is outdated, please update it!";
+            text += "\n  This map will not be allowed to be loaded";
+        }
     }
     
     void MapView::OnKeyPressed(int key)
     {
-        if (loaded) return;
+        if (loaded || !isUpdated) return;
         if (key == (int)EKeyboardKey::Enter)
         {
             loaded = true;

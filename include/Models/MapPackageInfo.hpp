@@ -15,8 +15,13 @@ namespace MapLoader
             config(MapConfig(doc["config"]))
             {
                 androidFileName = doc["androidFileName"].GetString();
+                if (doc.HasMember("androidRequiredVersion"))
+                {
+                    androidRequiredVersion = doc["androidRequiredVersion"].GetString();
+                }
             }
 
+            std::string androidRequiredVersion = "1.0.0";
             std::string androidFileName = "";
             Descriptor descriptor;
             MapConfig config;
