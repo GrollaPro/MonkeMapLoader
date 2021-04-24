@@ -200,30 +200,35 @@ MAKE_HOOK_OFFSETLESS(GorillaTagManager_ReportTag, void, GlobalNamespace::Gorilla
                 self->ChangeCurrentIt(taggedPlayer);
                 self->lastTag = (double)UnityEngine::Time::get_time();
                 
+                /*
                 Array<Il2CppObject*>* eventContent = reinterpret_cast<Array<Il2CppObject*>*>(il2cpp_functions::array_new(classof(Il2CppObject*), 2));
 
                 eventContent->values[0] = (Il2CppObject*)taggingPlayerID;
                 eventContent->values[1] = (Il2CppObject*)taggedPlayerID;
                 ExitGames::Client::Photon::SendOptions options = ExitGames::Client::Photon::SendOptions::_get_SendReliable();
                 PhotonNetwork::RaiseEvent(1, (Il2CppObject*)eventContent, raiseEventOptions, options);
+                */
             }
             else getLogger().info("Player Was already it!");
         }
-        else
+        else if (Time::get_time() > (self->lastTag + (double)self->tagCoolDown))
         {
             bool contains = self->currentInfected->Contains(taggedPlayer);
             
             if (!contains)
             {
                 self->AddInfectedPlayer(taggedPlayer);
-
+    	        /*
                 Array<Il2CppObject*>* eventContent = reinterpret_cast<Array<Il2CppObject*>*>(il2cpp_functions::array_new(classof(Il2CppObject*), 3));
                 eventContent->values[0] = (Il2CppObject*)taggingPlayerID;
                 eventContent->values[1] = (Il2CppObject*)taggedPlayerID;
-                eventContent->values[2] = reinterpret_cast<Il2CppObject*>(self->currentInfected->get_Count());
+
+                long count = self->currentInfected->get_Count();
+                eventContent->values[2] = (Il2CppObject*)count;
 
                 ExitGames::Client::Photon::SendOptions options = ExitGames::Client::Photon::SendOptions::_get_SendReliable();
                 PhotonNetwork::RaiseEvent(2, (Il2CppObject*)eventContent, raiseEventOptions, options);
+                */
             }
             else getLogger().info("Player Was already infected!");
         }
