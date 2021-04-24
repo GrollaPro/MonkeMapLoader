@@ -3,9 +3,9 @@
     "name": "Monke Map Loader",
     "id": "MonkeMapLoader",
     "author": "RedBrumbler",
-    "version": "1.0.8",
+    "version": "1.0.0",
     "packageId": "com.AnotherAxiom.GorillaTag",
-    "packageVersion": "1.0.4",
+    "packageVersion": "1.0.5",
     "type": "Gameplay",
     "dependencies": [
         {
