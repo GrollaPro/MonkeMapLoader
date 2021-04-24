@@ -615,11 +615,12 @@ namespace MapLoader
 
         for (int i = 0; i < renderers->Length(); i++)
         {
-            Array<Material*>* materials = renderers->values[i]->get_materials();
+            List<Material*>* materials = *il2cpp_utils::New<List<Material*>*>();
+            renderers->values[i]->GetSharedMaterials(materials);
 
-            for (int j = 0; j < materials->Length(); j++)
+            for (int j = 0; j < materials->size; j++)
             {
-                LightingUtils::SetLightingStrength(materials->values[j], 0.25f);
+                LightingUtils::SetLightingStrength(materials->items->values[j], 0.25f);
             }
         }
     }

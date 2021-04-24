@@ -79,12 +79,15 @@ namespace LightingUtils
         {
             for (int i = 0; i < pixels->Length(); i++)
             {
-                pixels->values[i] = (Color){
+                pixels->values[i] = pixels->values[i].RGBMultiplied(strength);
+                
+                /*(Color){
                         StrengthFromExistingColorFloat(pixels->values[i].r, strength),
                         StrengthFromExistingColorFloat(pixels->values[i].g, strength),
                         StrengthFromExistingColorFloat(pixels->values[i].b, strength),
                         1.0f
                     };
+                    */
             }
 
             duplicatedTexture->SetPixels(0, 0, map->get_width(), map->get_height(), pixels);
@@ -98,9 +101,6 @@ namespace LightingUtils
 
     float StrengthFromExistingColorFloat(float colorValue, float strength)
     {
-        float manipulatedValue = colorValue - (colorValue * (1 - strength));
-        if (manipulatedValue < 0) manipulatedValue = 0;
-        if (manipulatedValue > 1) manipulatedValue = 1.0f;
-        return manipulatedValue;
+        return colorValue * strength;
     }
 }

@@ -81,6 +81,6 @@ LOCAL_SHARED_LIBRARIES += quest-cosmetic-loader_0_1_3
 LOCAL_SHARED_LIBRARIES += zip
 LOCAL_SHARED_LIBRARIES += monkecodegen_0_2_4
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/monkecodegen/include' -DID='"MonkeMapLoader"' -DVERSION='"1.0.7"' -I'./shared' -I'./extern' -Wno-inaccessible-base -Wno-invalid-offsetof
+LOCAL_CFLAGS += -I'extern/libil2cpp/il2cpp/libil2cpp' -isystem 'extern' -I'extern/monkecodegen/include' -DID='"MonkeMapLoader"' -DVERSION='"1.0.8"' -I'./shared' -I'./extern' -Wno-inaccessible-base -Wno-invalid-offsetof
 LOCAL_C_INCLUDES += ./include ./src
 include $(BUILD_SHARED_LIBRARY)
