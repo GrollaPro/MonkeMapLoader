@@ -9,13 +9,11 @@ namespace MapLoader
 {
     void ObjectTrigger::ctor()
     {
-        getLogger().info("trigger ctor");
         objectsToTrigger = *il2cpp_utils::New<List<GameObject*>*>();
     }
 
     void ObjectTrigger::OnEnable()
     {
-        getLogger().info("trigger onEnable");
         for (int i = 0; i < objectsToTrigger->size; i++)
         {
             GameObject* objectToTrigger = objectsToTrigger->get_Item(i);
@@ -31,7 +29,7 @@ namespace MapLoader
     {
         if (triggered && onlyTriggerOnce)
             return;
-        
+
         for (int i = 0; i < objectsToTrigger->size; i++)
         {
             GameObject* objectToTrigger = objectsToTrigger->get_Item(i);
@@ -39,7 +37,6 @@ namespace MapLoader
             objectToTrigger->SetActive(!disableObject);
         }
         
-
         triggered = true;
     }
 }

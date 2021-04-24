@@ -157,8 +157,11 @@ namespace MapLoader
 
         if (!isUpdated) // if map is of newver version than the maploader
         {
-            text += "\n  Your map loader is outdated, please update it!";
+            text += "<color=#fdfdfd>";
+            text += "\n  Your map loader is outdated,";
+            text += "\n  please update it!";
             text += "\n  This map will not be allowed to be loaded";
+            text += "</color>";
         }
     }
     

@@ -57,6 +57,7 @@
 #include "Photon/Realtime/WebFlags.hpp"
 
 #include "ExitGames/Client/Photon/SendOptions.hpp"
+#include "ExitGames/Client/Photon/Hashtable.hpp"
 
 ModInfo modInfo;
 
@@ -130,8 +131,24 @@ MAKE_HOOK_OFFSETLESS(VRRig_PlayTagSound, void, GlobalNamespace::VRRig* self, int
         if (Loader::lobbyName != "" && currentGameType.find(Loader::lobbyName) != std::string::npos)
         {
             GorillaTagManager* gorillaTagManager = GorillaTagManager::_get_instance();
-            bool isCurrentlyTag = gorillaTagManager->isCurrentlyTag;
-            double timeInfectedGameEnded = gorillaTagManager->timeInfectedGameEnded;
+            
+            static Il2CppString* isCurrentlyTagString = il2cpp_utils::createcsstr("isCurrentlyTag", il2cpp_utils::StringType::Manual);
+            Il2CppObject* tagptr = *il2cpp_utils::New<Il2CppObject*>();
+            bool isCurrentlyTag = true;
+            if (gorillaTagManager->currentRoom->get_CustomProperties()->TryGetValue(isCurrentlyTagString, tagptr))
+            {
+                isCurrentlyTag = *(bool*)&tagptr;
+            }
+
+            static Il2CppString* timeInfectedGameEndedString = il2cpp_utils::createcsstr("timeInfectedGameEnded", il2cpp_utils::StringType::Manual);
+            
+            Il2CppObject* timeptr = *il2cpp_utils::New<Il2CppObject*>();
+            double timeInfectedGameEnded = 0.0;
+            if (gorillaTagManager->currentRoom->get_CustomProperties()->TryGetValue(timeInfectedGameEndedString, timeptr))
+            {
+                timeInfectedGameEnded = *(double*)&timeptr;
+            }
+
             if (timeInfectedGameEnded > lastGameEnd)
             {
                 lastGameEnd = timeInfectedGameEnded;
@@ -158,7 +175,6 @@ MAKE_HOOK_OFFSETLESS(GorillaTagManager_ReportTag, void, GlobalNamespace::Gorilla
 {
     using namespace Photon::Pun;
     using namespace Photon::Realtime;
-    getLogger().info("Player Tagged!");
     GorillaTagManager_ReportTag(self, taggedPlayer, taggingPlayer);
     
     PhotonView* photonView = self->get_photonView();

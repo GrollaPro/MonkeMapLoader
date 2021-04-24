@@ -588,12 +588,12 @@ namespace MapLoader
         for (int i = 0; i < length; i++)
         {
             Collider* collider = colliders->values[i];
-            if (!collider) return;
+            if (!collider) continue;
 
             
             if (collider->get_isTrigger())
             {
-                child->set_layer(MASKLAYER_GORILLATRIGGER);
+                child->set_layer(MASKLAYER_PLAYERTRIGGER);
                 continue;
             }
             else if (child->get_layer() == 0)
@@ -604,7 +604,7 @@ namespace MapLoader
             if (child->GetComponent<Teleporter*>() || child->GetComponent<TagZone*>() || child->GetComponent<ObjectTrigger*>())
             {
                 collider->set_isTrigger(true);
-                child->set_layer(MASKLAYER_HANDTRIGGER);
+                child->set_layer(MASKLAYER_PLAYERTRIGGER);
             }
         }
     }
