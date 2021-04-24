@@ -37,15 +37,18 @@ namespace MapLoader
         {
             static Il2CppString* spawnPointContainerName = il2cpp_utils::createcsstr("SpawnPointContainer", il2cpp_utils::StringType::Manual);
             GameObject* spawnPointContainer = GameObject::Find(spawnPointContainerName);
-            Transform* containerTransform = spawnPointContainer->get_transform();
-
-            int childCount = containerTransform->get_childCount();
-            teleportPoints->Clear();
-            getLogger().info("Found %d children to teleport to!", childCount);
-            for (int i = 0; i < childCount; i++)
+            if (spawnPointContainer)
             {
-                Transform* child = containerTransform->GetChild(i);
-                teleportPoints->Add(child);
+                Transform* containerTransform = spawnPointContainer->get_transform();
+    
+                int childCount = containerTransform->get_childCount();
+                teleportPoints->Clear();
+                getLogger().info("Found %d children to teleport to!", childCount);
+                for (int i = 0; i < childCount; i++)
+                {
+                    Transform* child = containerTransform->GetChild(i);
+                    teleportPoints->Add(child);
+                }
             }
         }
 

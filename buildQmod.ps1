@@ -10,6 +10,7 @@ if (-not ($PSVersionTable.PSEdition -eq "Core")) {
 Compress-Archive -Path  "./libs/arm64-v8a/libmonkemaploader.so",`
                         "./ExtraFiles/Teleporter",`
                         "./ExtraFiles/Orb",`
+                        "./ExtraFiles/gkz_beginnerblock.gtmap",`
                         "./mod.json" -DestinationPath "./MonkeMapLoader.zip" -Update
 
 & copy-item -Force "./MonkeMapLoader.zip" "./MonkeMapLoader.qmod"

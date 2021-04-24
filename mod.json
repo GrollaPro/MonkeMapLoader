@@ -27,6 +27,10 @@
         {
             "name": "Teleporter",
             "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/MonkeMapLoader/Teleporter"
+        },
+        {
+            "name": "gkz_beginnerblock.gtmap",
+            "destination": "/sdcard/ModData/com.AnotherAxiom.GorillaTag/Mods/MonkeMapLoader/CustomMaps/gkz_beginnerblock.gtmap"
         }
     ]
 }
