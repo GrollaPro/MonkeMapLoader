@@ -40,7 +40,7 @@ namespace MapLoader
             if (spawnPointContainer)
             {
                 Transform* containerTransform = spawnPointContainer->get_transform();
-    
+
                 int childCount = containerTransform->get_childCount();
                 teleportPoints->Clear();
                 getLogger().info("Found %d children to teleport to!", childCount);
@@ -62,7 +62,7 @@ namespace MapLoader
                 Transform* treeHomeTransform = treeHomeTargetObject->get_transform();
                 teleportPoints->Add(treeHomeTransform);
             }
-            else 
+            else
             {
                 getLogger().error("Teleporter point array was empty!");
                 return;
