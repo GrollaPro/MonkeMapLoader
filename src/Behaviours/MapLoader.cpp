@@ -12,6 +12,13 @@
 #include "Utils/RoomUtils.hpp"
 #include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
 
+#include "Photon/Pun/PhotonNetwork.hpp"
+#include "Photon/Pun/ServerSettings.hpp"
+#include "Photon/Realtime/LoadBalancingClient.hpp"
+#include "Photon/Realtime/Room.hpp"
+
+#include "ExitGames/Client/Photon/Hashtable.hpp"
+
 #include "UnityEngine/SceneManagement/SceneManager.hpp"
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/BoxCollider.hpp"
@@ -40,6 +47,11 @@ namespace MapLoader
     GameObject* Loader::mapInstance = nullptr;
     bool Loader::isLoading = false;
     bool Loader::isMoved = false;
+    
+    void Loader::ctor()
+    {
+        instance = this;
+    }
     
     void Loader::Awake()
     {}
@@ -73,17 +85,18 @@ namespace MapLoader
     {
         if (mapInstance)
         {
+            lobbyName = "";
+            
             Object::Destroy(mapInstance);
             
             mapInstance = nullptr;
             
             ColorTreeTeleporter(Color::get_red());
 
-            /*
+            
             using UnloadUnusedAssets = function_ptr_t<void>;
             static UnloadUnusedAssets unloadUnusedAssets = reinterpret_cast<UnloadUnusedAssets>(il2cpp_functions::resolve_icall("UnityEngine.Resources::UnloadUnusedAssets"));
             unloadUnusedAssets();
-            */
         }
     }
 
@@ -160,7 +173,6 @@ namespace MapLoader
         collider->set_enabled(false);
         Object::Destroy(collider);
 
-        static std::vector<Il2CppClass*> teleporterKlass = {classof(Teleporter*)};
         Teleporter* treeTeleporter = globalData->bigTreeTeleportToMap->AddComponent<Teleporter*>();
         treeTeleporter->teleporterType = TeleporterType::Map;
         treeTeleporter->joinGameOnTeleport = true;
@@ -169,7 +181,6 @@ namespace MapLoader
 
         Object::DontDestroyOnLoad(treeTeleporter);
         Transform* treePointTransform = nullptr;
-        static Il2CppClass* goKlass = il2cpp_utils::GetClassFromName("UnityEngine", "GameObject");
         if (!globalData->bigTreePoint)
         {
             Il2CppString* treeHomeTargetObjectName = il2cpp_utils::createcsstr("TreeHomeTargetObject");
@@ -248,10 +259,14 @@ namespace MapLoader
 
     void Loader::JoinGame()
     {
+        using namespace Photon::Pun;
+        using namespace Photon::Realtime;
+
         // if lobbyName defined
         if (lobbyName != "")
         {
             RoomUtils::JoinModdedLobby(lobbyName);
+
             Vector3 gravity = {0.0, mapDescriptor->gravity, 0.0f};
             using SetGravity = function_ptr_t<void, Vector3&>;
             static SetGravity set_gravity = reinterpret_cast<SetGravity>(il2cpp_functions::resolve_icall("UnityEngine.Physics::set_gravity_Injected"));
@@ -283,7 +298,6 @@ namespace MapLoader
                 }
             }
         }
-        
     }
 
     void Loader::ForceRespawn()
@@ -351,7 +365,6 @@ namespace MapLoader
         isLoading = true;
         UnloadMap();
 
-        lobbyName = "";
 
         mapLoadData.info = info;
         mapLoadData.loadState = (LoadState)0;
@@ -404,9 +417,9 @@ namespace MapLoader
         if (!scenePaths) return;
         Il2CppString* scenePath = scenePaths->values[0];
 
-        LoadSceneParameters params = {LoadSceneMode::Additive, LocalPhysicsMode::Physics3D};
+        //LoadSceneParameters params = {LoadSceneMode::Additive, LocalPhysicsMode::Physics3D};
 
-        auto* sceneAsync = SceneManager::LoadSceneAsync(scenePath, params);
+        auto* sceneAsync = SceneManager::LoadSceneAsync(scenePath, LoadSceneMode::Additive);
 
         std::function<void(void)> fun = [&]{
             mapLoadData.loadState = LoadState::InitializingMap;
@@ -431,12 +444,12 @@ namespace MapLoader
     {
         Array<GameObject*>* allObjects = Resources::FindObjectsOfTypeAll<GameObject*>();
 
-        GameObject* mapInstance = GameObject::New_ctor();
-        Object::DontDestroyOnLoad(mapInstance);
-        Transform* mapTransform = mapInstance->get_transform();
+        GameObject* mapInstance = nullptr;
 
+        std::vector<Transform*> otherTransforms = {};
         if (allObjects)
         {
+            
             // for each object
             for (int j = 0; j < allObjects->Length(); j++)
             {
@@ -455,10 +468,32 @@ namespace MapLoader
                     Transform* objParent = objTransform->get_parent();
                     if (!objParent)
                     {
-                        objTransform->SetParent(mapTransform);
+                        std::string objName = to_utf8(csstrtostr(gameObject->get_name()));
+
+                        // find the first candidate for being the map descriptor obj, it will most likely (definitely) have text components that are objects like teleporters
+                        // if found then it knows it was one
+                        if (MapDescriptor::CanBeDescriptor(gameObject) && !mapInstance)
+                        {
+                            getLogger().info("mapInstance is %s", objName.c_str());
+                            mapInstance = gameObject;
+                        }
+                        else
+                        {
+                            getLogger().info("Parented obj %s", objName.c_str());
+                            otherTransforms.push_back(gameObject->get_transform());
+                        }
                     }
                 }
             }
+        }
+        if (!mapInstance) getLogger().error("MapInstance was not defined!");
+
+        //Object::DontDestroyOnLoad(mapInstance);
+        Transform* mapTransform = mapInstance->get_transform();
+
+        for (auto* t : otherTransforms)
+        {
+            t->SetParent(mapTransform, false);
         }
 
         ProcessMap(mapInstance);
@@ -496,15 +531,16 @@ namespace MapLoader
         ProcessChildren(mapTransform);
 
         static Il2CppString* fakeSkyBoxString = il2cpp_utils::createcsstr("FakeSkyBox", il2cpp_utils::StringType::Manual);
-        int childCount = mapTransform->get_childCount();
-        Transform* fakeSkyBox = nullptr;
+        //int childCount = mapTransform->get_childCount();
+        Transform* fakeSkyBox = mapTransform->Find(fakeSkyBoxString);
+        /*
         for (int i = 0; i < childCount; i++)
         {
             if (fakeSkyBox) break;
             Transform* child = mapTransform->GetChild(i);
             fakeSkyBox = child->Find(fakeSkyBoxString);
         }
-
+        */
         // skybox setup
         if (fakeSkyBox)
         {
@@ -536,17 +572,17 @@ namespace MapLoader
         Transform* emergencyTeleportTransform = globalData->fallEmergencyTeleport->get_transform();
         emergencyTeleportTransform->SetParent(mapTransform);
         Vector3 localScale = {2000.0f, 1.0f, 2000.0f};
-        Vector3 localPosition = {0.0f, 4700.0f, 0.0f};
+        Vector3 position = {0.0f, 4700.0f, 0.0f};
 
         emergencyTeleportTransform->set_localScale(localScale);
-        emergencyTeleportTransform->set_localPosition(localPosition);
+        emergencyTeleportTransform->set_position(position);
 
         Teleporter* emergencyTeleporter = globalData->fallEmergencyTeleport->AddComponent<Teleporter*>();
         static Il2CppString* spawnPointContainerName = il2cpp_utils::createcsstr("SpawnPointContainer", il2cpp_utils::StringType::Manual);
         GameObject* spawnPointContainer = GameObject::Find(spawnPointContainerName);
         Transform* containerTransform = spawnPointContainer->get_transform();
 
-        childCount = containerTransform->get_childCount();
+        int childCount = containerTransform->get_childCount();
         emergencyTeleporter->teleportPoints->Clear();
         
         for (int i = 0; i < childCount; i++)
@@ -623,5 +659,10 @@ namespace MapLoader
                 LightingUtils::SetLightingStrength(materials->items->values[j], 0.25f);
             }
         }
+    }
+
+    Loader* Loader::get_instance()
+    {
+        return instance;
     }
 }

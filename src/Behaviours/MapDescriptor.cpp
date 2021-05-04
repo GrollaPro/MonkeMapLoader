@@ -2,6 +2,7 @@
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
 #include <unordered_map>
 #include <map>
+#include "Behaviours/MapLoader.hpp"
 #include "Behaviours/Teleporter.hpp"
 #include "Behaviours/TagZone.hpp"
 #include "Behaviours/ObjectTrigger.hpp"
@@ -11,6 +12,9 @@
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/UI/Text.hpp"
+
+#include "GlobalNamespace/GorillaScoreboardSpawner.hpp"
+#include "GlobalNamespace/GorillaScoreBoard.hpp"
 
 DEFINE_TYPE(MapLoader::MapDescriptor);
 
@@ -225,5 +229,47 @@ namespace MapLoader
                 }
             }
         }
+        /*
+        //setup scoreboard
+        using namespace GlobalNamespace;
+        static Il2cppString* customBoardName = il2cpp_utils::createcsstr("GorillaUI/CustomScoreboardAnchor", il2cpp_utils::StringType::Manual);
+        static Il2CppString* boardPath = il2cpp_utils::createcsstr("GorillaUI/ForestScoreboardAnchor", il2cpp_utils::StringType::Manual);
+        GameObject* originalBoard = GameObject::Find(boardPath);
+        
+        GorillaScoreboardSpawner* originalSpawner = originalBoard->GetComponent<GorillaScoreboardSpawner*>();
+        GameObject* customBoard = Object::Instantiate(originalBoard);
+
+        GorillaScoreboardSpawner* customSpawner = customBoard->GetComponent<GorillaScoreboardSpawner*>();
+        Transform* customBoardTransform = customBoard->get_transform();
+
+        customSpawner->gameType = il2cpp_utils::createcsstr("infection_MOD_" + Loader::lobbyName);
+        customSpawner->scoreboardPrefab = originalSpawner->scoreboardPrefab;
+
+        customBoardTransform->set_parent(originalBoard->get_transform()->get_parent(), false);
+
+        customBoardTransform->set_position(Vector3(0.0f, 5002.0f, 0.0f));
+        customBoardTransform->set_localEulerAngles(Vector3(0.0f, 180.0f, 0.0f));
+
+        customBoard->SetActive(true);
+        */
+    }
+
+    bool MapDescriptor::CanBeDescriptor(GameObject* go)
+    {
+        Array<UI::Text*>* textComponents = go->GetComponentsInChildren<UI::Text*>(true);
+        if (!textComponents) return false;
+        for (int i = 0; i < textComponents->Length(); i++)
+        {
+            UI::Text* component = textComponents->values[i];
+            Il2CppString* serializedCS = component->get_text();
+            std::string serialized = to_utf8(csstrtostr(serializedCS));
+            
+            // first obj we find that can be a teleport or whatever means it was correct, then return true
+            if (serialized.find("{") == std::string::npos || serialized.find("}") == std::string::npos) continue;
+            return true;
+        }
+
+        // if none found return false
+        return false;
     }
 }

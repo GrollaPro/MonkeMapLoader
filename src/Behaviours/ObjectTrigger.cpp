@@ -30,6 +30,7 @@ namespace MapLoader
         if (triggered && onlyTriggerOnce)
             return;
 
+        getLogger().info("Trigger %s", to_utf8(csstrtostr(get_gameObject()->get_name())).c_str());
         for (int i = 0; i < objectsToTrigger->size; i++)
         {
             GameObject* objectToTrigger = objectsToTrigger->get_Item(i);

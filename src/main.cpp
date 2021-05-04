@@ -15,6 +15,9 @@
 #include "Behaviours/Player.hpp"
 #include "Behaviours/MapDescriptor.hpp"
 #include "Behaviours/MapLoader.hpp"
+#include "Behaviours/RoomList.hpp"
+#include "Behaviours/PlayerCountManager.hpp"
+#include "Behaviours/MapNetworkJoinTrigger.hpp"
 
 #include "UI/MapView.hpp"
 #include "UI/MapSelectorView.hpp"
@@ -37,7 +40,10 @@
 #include "GlobalNamespace/GorillaComputer.hpp"
 #include "GlobalNamespace/GorillaTagManager.hpp"
 #include "GlobalNamespace/PhotonNetworkController.hpp"
+#include "GlobalNamespace/GorillaQuitBox.hpp"
 
+#include "UnityEngine/Animator.hpp"
+#include "UnityEngine/Animations/AnimationPlayableOutput.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/Vector3.hpp"
@@ -47,10 +53,13 @@
 #include "UnityEngine/MeshCollider.hpp"
 #include "UnityEngine/Mesh.hpp"
 #include "UnityEngine/Time.hpp"
+#include "UnityEngine/Resources.hpp"
 #include "UnityEngine/SceneManagement/Scene.hpp"
 
 #include "Photon/Pun/PhotonNetwork.hpp"
 #include "Photon/Pun/PhotonView.hpp"
+#include "Photon/Pun/PhotonAnimatorView.hpp"
+#include "Photon/Realtime/LoadBalancingClient.hpp"
 #include "Photon/Realtime/Player.hpp"
 #include "Photon/Realtime/Room.hpp"
 #include "Photon/Realtime/RaiseEventOptions.hpp"
@@ -86,6 +95,30 @@ MAKE_HOOK_OFFSETLESS(GorillaComputer_Start, void, GlobalNamespace::GorillaComput
 
     GameObject* loaderGO = *il2cpp_utils::New<GameObject*>();
     loaderGO->AddComponent<Loader*>()->Initialize();
+
+    GameObject* joinGO = *il2cpp_utils::New<GameObject*>();
+    MapNetworkJoinTrigger* roomList = joinGO->AddComponent<MapNetworkJoinTrigger*>();
+    Object::DontDestroyOnLoad(joinGO);
+
+    Array<GlobalNamespace::GorillaQuitBox*>* quitBoxes = Resources::FindObjectsOfTypeAll<GlobalNamespace::GorillaQuitBox*>();
+
+    for (int i = 0; i < quitBoxes->Length(); i++)
+    {
+        quitBoxes->values[i]->set_enabled(false);
+    }
+    
+    /*
+    GameObject* listGO = *il2cpp_utils::New<GameObject*>();
+    RoomList* roomList = listGO->AddComponent<RoomList*>();
+
+    Object::DontDestroyOnLoad(listGO);
+
+    
+    GameObject* countGO = *il2cpp_utils::New<GameObject*>();
+    PlayerCountManager* countManager = countGO->AddComponent<PlayerCountManager*>();
+
+    Object::DontDestroyOnLoad(countGO);
+    */
 }
 
 MAKE_HOOK_OFFSETLESS(Player_GetSlidePercentage, float, GorillaLocomotion::Player* self, RaycastHit raycastHit)
@@ -134,10 +167,14 @@ MAKE_HOOK_OFFSETLESS(VRRig_PlayTagSound, void, GlobalNamespace::VRRig* self, int
             
             static Il2CppString* isCurrentlyTagString = il2cpp_utils::createcsstr("isCurrentlyTag", il2cpp_utils::StringType::Manual);
             Il2CppObject* tagptr = *il2cpp_utils::New<Il2CppObject*>();
-            bool isCurrentlyTag = true;
+            bool isCurrentlyTag = false;
             if (gorillaTagManager->currentRoom->get_CustomProperties()->TryGetValue(isCurrentlyTagString, tagptr))
             {
                 isCurrentlyTag = *(bool*)&tagptr;
+            }
+            else 
+            {
+                getLogger().info("Could not get currently tag bool, assuming false");
             }
 
             static Il2CppString* timeInfectedGameEndedString = il2cpp_utils::createcsstr("timeInfectedGameEnded", il2cpp_utils::StringType::Manual);
@@ -147,6 +184,10 @@ MAKE_HOOK_OFFSETLESS(VRRig_PlayTagSound, void, GlobalNamespace::VRRig* self, int
             if (gorillaTagManager->currentRoom->get_CustomProperties()->TryGetValue(timeInfectedGameEndedString, timeptr))
             {
                 timeInfectedGameEnded = *(double*)&timeptr;
+            }
+            else
+            {
+                getLogger().info("Could not get timeInfectedGameEnded double, assuming 0.0");
             }
 
             if (timeInfectedGameEnded > lastGameEnd)
@@ -239,6 +280,21 @@ MAKE_HOOK_OFFSETLESS(GorillaTagManager_ReportTag, void, GlobalNamespace::Gorilla
     }
 }
 
+MAKE_HOOK_OFFSETLESS(MatchMakingCallbacksContainer_OnJoinedRoom, void, Photon::Realtime::MatchMakingCallbacksContainer* self)
+{
+    MatchMakingCallbacksContainer_OnJoinedRoom(self);
+    getLogger().info("OnJoinedRoom Callback");
+}
+
+MAKE_HOOK_OFFSETLESS(PhotonAnimatorView_Update, void, Photon::Pun::PhotonAnimatorView* self)
+{
+    PhotonAnimatorView_Update(self);
+    getLogger().info("PhotonAnimatorView Update");
+
+    getLogger().info("PhotonAnimatorView: Animator: %p", self->m_Animator);
+    getLogger().info("PhotonAnimatorView: StreamQueue: %p", self->m_StreamQueue);
+}
+
 extern "C" void setup(ModInfo& info)
 {
     info.id = ID;
@@ -260,11 +316,14 @@ extern "C" void load()
     INSTALL_HOOK_OFFSETLESS(getLogger(), Player_GetSlidePercentage, il2cpp_utils::FindMethodUnsafe("GorillaLocomotion", "Player", "GetSlidePercentage", 1));
     INSTALL_HOOK_OFFSETLESS(getLogger(), VRRig_PlayTagSound, il2cpp_utils::FindMethodUnsafe("", "VRRig", "PlayTagSound", 1));
     INSTALL_HOOK_OFFSETLESS(getLogger(), GorillaTagManager_ReportTag, il2cpp_utils::FindMethodUnsafe("", "GorillaTagManager", "ReportTag", 2));
-    
+    INSTALL_HOOK_OFFSETLESS(getLogger(), MatchMakingCallbacksContainer_OnJoinedRoom, il2cpp_utils::FindMethodUnsafe("Photon.Realtime", "MatchMakingCallbacksContainer", "OnJoinedRoom", 0));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), PhotonAnimatorView_Update, il2cpp_utils::FindMethodUnsafe("Photon.Pun", "PhotonAnimatorView", "Update", 0));
+
     using namespace MapLoader;
+
     custom_types::Register::RegisterType<GorillaMapTriggerBase>();
-    custom_types::Register::RegisterTypes<Teleporter, TagZone, Player, ObjectTrigger, RotateByHand, PreviewOrb, SurfaceClimbSettings, RoundEndActions, Loader, MapDescriptor>();
-    custom_types::Register::RegisterTypes<MapSelectorView, MapView, MapSelectorViewManager>();
+    custom_types::Register::RegisterTypes<Teleporter, TagZone, Player, ObjectTrigger, RotateByHand, PreviewOrb, SurfaceClimbSettings, RoundEndActions, Loader, MapDescriptor, RoomList, PlayerCountManager>();
+    custom_types::Register::RegisterTypes<MapSelectorView, MapView, MapSelectorViewManager, MapNetworkJoinTrigger>();
 
     GorillaUI::Register::RegisterViewManager<MapSelectorViewManager*>("Map Loader", VERSION);
 

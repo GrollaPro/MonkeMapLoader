@@ -39,10 +39,12 @@ DECLARE_CLASS_CODEGEN(MapLoader, Loader, UnityEngine::MonoBehaviour,
     DECLARE_STATIC_FIELD(bool, isLoading);
     DECLARE_STATIC_FIELD(bool, isMoved);
 
+    DECLARE_CTOR(ctor);
     DECLARE_METHOD(static void, ColorTreeTeleporter, UnityEngine::Color color);
     DECLARE_METHOD(static void, JoinGame);
     DECLARE_METHOD(static void, ForceRespawn);
     DECLARE_METHOD(static void, ResetMapProperties);
+    DECLARE_METHOD(static Loader*, get_instance);
     
     DECLARE_METHOD(void, Awake);
     DECLARE_METHOD(void, Update);
@@ -63,12 +65,13 @@ DECLARE_CLASS_CODEGEN(MapLoader, Loader, UnityEngine::MonoBehaviour,
         static inline std::string lobbyName = "";
         static inline GlobalData* globalData = nullptr;
         static inline MapDescriptor* mapDescriptor = nullptr;
-
         void LoadMap(MapInfo info);
     private:
         MapLoadData mapLoadData;
+        static inline Loader* instance = nullptr;
 
     REGISTER_FUNCTION(
+        REGISTER_METHOD(ctor);
         REGISTER_METHOD(Awake);
         REGISTER_METHOD(Update);
         REGISTER_METHOD(UnloadMap);
@@ -87,6 +90,7 @@ DECLARE_CLASS_CODEGEN(MapLoader, Loader, UnityEngine::MonoBehaviour,
         REGISTER_METHOD(ProcessChildren);
         REGISTER_METHOD(SetupCollisions);
         REGISTER_METHOD(FixLighting);
+        REGISTER_METHOD(get_instance);
         REGISTER_FIELD(mapInstance);
         REGISTER_FIELD(isLoading);
         REGISTER_FIELD(isMoved);

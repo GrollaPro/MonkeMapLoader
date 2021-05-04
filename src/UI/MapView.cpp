@@ -149,20 +149,22 @@ namespace MapLoader
     void MapView::DrawMap()
     {
         if (!mapInfo) return;
-        text += "\n<size=60>";
-        text += string_format("   Author: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.author.c_str());
-        text += string_format("   Map Name: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.mapName.c_str());
-        text += string_format("   Description: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.description.c_str());
-        text += "\n</size>";
-
         if (!isUpdated) // if map is of newver version than the maploader
         {
             text += "<color=#fdfdfd>";
             text += "\n  Your map loader is outdated,";
             text += "\n  please update it!";
             text += "\n  This map will not be allowed to be loaded";
+            text += string_format("\n  Required: %s", ((MapInfo*)mapInfo)->packageInfo->androidRequiredVersion.c_str());
+            text += string_format("\n  You Have: %s", pluginVersion.c_str());
             text += "</color>";
         }
+
+        text += "\n<size=60>";
+        text += string_format("   Author: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.author.c_str());
+        text += string_format("   Map Name: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.mapName.c_str());
+        text += string_format("   Description: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.description.c_str());
+        text += "\n</size>";
     }
     
     void MapView::OnKeyPressed(int key)
