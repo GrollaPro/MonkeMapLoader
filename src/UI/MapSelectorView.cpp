@@ -7,6 +7,7 @@
 #include "Models/MapList.hpp"
 #include "Behaviours/PreviewOrb.hpp"
 #include "Behaviours/MapLoader.hpp"
+#include "Behaviours/MonkeRoomManager.hpp"
 #include "monkecomputer/shared/KeyExtension.hpp"
 
 #include "Photon/Pun/PhotonNetwork.hpp"
@@ -154,14 +155,14 @@ namespace MapLoader
         {
             // max display length is technically 41, but we want to also display user count so we need to reserve some space for that
             std::string display = m.packageInfo->descriptor.mapName.substr(0, 34);
-            /*
+            
             // fill the rest up with spaces
             for (int i = display.size(); i < 34; i++)
             {
                 display += " ";
             }
 
-            int userCount = rand() % 2000;
+            int userCount = MonkeRoomManager::PlayersOnMap(m.get_mapString());
             std::string countString = string_format("%d", userCount);
             // if we ever have more than 999 users in one map, just display it as >1k, since at that point the precision is not really required
             if (userCount > 999) 
@@ -173,7 +174,7 @@ namespace MapLoader
             
             // display number in white
             display += string_format(" - <color=#fdfdfd>%s</color>", countString.c_str());
-            */
+            
             mapNames.push_back(display);
         }
 

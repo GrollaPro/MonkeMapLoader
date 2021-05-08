@@ -62,12 +62,9 @@ namespace MapLoader
 
             while (serialized.find("}, {") != std::string::npos)
             {
-                getLogger().error("serialized was: \n%s", serialized.c_str());
                 int seperationpos = serialized.find("}, {");
                 std::string subObj = serialized.substr(0, seperationpos + 1);
                 serialized = serialized.erase(0, seperationpos + 3);
-                getLogger().error("serialized is now: \n%s", serialized.c_str());
-                getLogger().error("subObj: \n%s", subObj.c_str());
 
                 toMapIfContains(subObj, "TeleporterName", teleporters);
                 else toMapIfContains(subObj, "TeleportPoint", teleportPoints);

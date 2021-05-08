@@ -16,8 +16,10 @@
 #include "Behaviours/MapDescriptor.hpp"
 #include "Behaviours/MapLoader.hpp"
 #include "Behaviours/RoomList.hpp"
-#include "Behaviours/PlayerCountManager.hpp"
+#include "Behaviours/MonkeRoomManager.hpp"
 #include "Behaviours/MapNetworkJoinTrigger.hpp"
+
+#include "Models/RoomRegionInfo.hpp"
 
 #include "UI/MapView.hpp"
 #include "UI/MapSelectorView.hpp"
@@ -59,11 +61,13 @@
 #include "Photon/Pun/PhotonNetwork.hpp"
 #include "Photon/Pun/PhotonView.hpp"
 #include "Photon/Pun/PhotonAnimatorView.hpp"
+
 #include "Photon/Realtime/LoadBalancingClient.hpp"
 #include "Photon/Realtime/Player.hpp"
 #include "Photon/Realtime/Room.hpp"
 #include "Photon/Realtime/RaiseEventOptions.hpp"
 #include "Photon/Realtime/WebFlags.hpp"
+#include "Photon/Realtime/ConnectionCallbacksContainer.hpp"
 
 #include "ExitGames/Client/Photon/SendOptions.hpp"
 #include "ExitGames/Client/Photon/Hashtable.hpp"
@@ -90,6 +94,8 @@ MAKE_HOOK_OFFSETLESS(Player_Awake, void, GorillaLocomotion::Player* self)
 
 MAKE_HOOK_OFFSETLESS(GorillaComputer_Start, void, GlobalNamespace::GorillaComputer* self)
 {
+    if (!MonkeRoomManager::get_instance()) il2cpp_utils::New<MonkeRoomManager*>();
+
     GorillaComputer_Start(self);
     MapList::Load();
 
@@ -286,13 +292,43 @@ MAKE_HOOK_OFFSETLESS(MatchMakingCallbacksContainer_OnJoinedRoom, void, Photon::R
     getLogger().info("OnJoinedRoom Callback");
 }
 
-MAKE_HOOK_OFFSETLESS(PhotonAnimatorView_Update, void, Photon::Pun::PhotonAnimatorView* self)
+// forced region patch
+std::string patchForcedRegion = "";
+MAKE_HOOK_OFFSETLESS(PhotonNetworkController_GetRegionWithLowestPing, Il2CppString*, GlobalNamespace::PhotonNetworkController* self)
 {
-    PhotonAnimatorView_Update(self);
-    getLogger().info("PhotonAnimatorView Update");
+    Il2CppString* resultCS = PhotonNetworkController_GetRegionWithLowestPing(self);
 
-    getLogger().info("PhotonAnimatorView: Animator: %p", self->m_Animator);
-    getLogger().info("PhotonAnimatorView: StreamQueue: %p", self->m_StreamQueue);
+    std::string result = resultCS ? to_utf8(csstrtostr(resultCS)) : "";
+
+    // if we have a region we want to force and the region is not different, then return that
+    if (patchForcedRegion != "" && result != patchForcedRegion)
+    {
+        result = patchForcedRegion;
+        patchForcedRegion = "";
+    }
+
+    return il2cpp_utils::createcsstr(result);
+}
+
+MAKE_HOOK_OFFSETLESS(ConnectionCallbacksContainer_OnConnectedToMaster, void, Photon::Realtime::ConnectionCallbacksContainer* self)
+{
+    ConnectionCallbacksContainer_OnConnectedToMaster(self);
+
+    if (!MonkeRoomManager::get_instance()) il2cpp_utils::New<MonkeRoomManager*>();
+
+    // we do some onconnectedtomaster
+    MonkeRoomManager::get_instance()->OnConnectedToMaster();
+
+}
+
+MAKE_HOOK_OFFSETLESS(LobbyCallbacksContainer_OnRoomListUpdate, void, Photon::Realtime::LobbyCallbacksContainer* self, List<Photon::Realtime::RoomInfo*>* roomList)
+{
+    LobbyCallbacksContainer_OnRoomListUpdate(self, roomList);
+
+    if (!MonkeRoomManager::get_instance()) il2cpp_utils::New<MonkeRoomManager*>();
+
+    MonkeRoomManager::get_instance()->OnRoomListUpdate(roomList);
+    // we do some OnRoomListUpdate
 }
 
 extern "C" void setup(ModInfo& info)
@@ -317,12 +353,15 @@ extern "C" void load()
     INSTALL_HOOK_OFFSETLESS(getLogger(), VRRig_PlayTagSound, il2cpp_utils::FindMethodUnsafe("", "VRRig", "PlayTagSound", 1));
     INSTALL_HOOK_OFFSETLESS(getLogger(), GorillaTagManager_ReportTag, il2cpp_utils::FindMethodUnsafe("", "GorillaTagManager", "ReportTag", 2));
     INSTALL_HOOK_OFFSETLESS(getLogger(), MatchMakingCallbacksContainer_OnJoinedRoom, il2cpp_utils::FindMethodUnsafe("Photon.Realtime", "MatchMakingCallbacksContainer", "OnJoinedRoom", 0));
-    INSTALL_HOOK_OFFSETLESS(getLogger(), PhotonAnimatorView_Update, il2cpp_utils::FindMethodUnsafe("Photon.Pun", "PhotonAnimatorView", "Update", 0));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), PhotonNetworkController_GetRegionWithLowestPing, il2cpp_utils::FindMethodUnsafe("", "PhotonNetworkController", "GetRegionWithLowestPing", 0));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), ConnectionCallbacksContainer_OnConnectedToMaster, il2cpp_utils::FindMethodUnsafe("Photon.Realtime", "ConnectionCallbacksContainer", "OnConnectedToMaster", 0));
+    INSTALL_HOOK_OFFSETLESS(getLogger(), LobbyCallbacksContainer_OnRoomListUpdate, il2cpp_utils::FindMethodUnsafe("Photon.Realtime", "LobbyCallbacksContainer", "OnRoomListUpdate", 1));
 
     using namespace MapLoader;
 
     custom_types::Register::RegisterType<GorillaMapTriggerBase>();
-    custom_types::Register::RegisterTypes<Teleporter, TagZone, Player, ObjectTrigger, RotateByHand, PreviewOrb, SurfaceClimbSettings, RoundEndActions, Loader, MapDescriptor, RoomList, PlayerCountManager>();
+    custom_types::Register::RegisterType<RoomRegionInfo>();
+    custom_types::Register::RegisterTypes<Teleporter, TagZone, Player, ObjectTrigger, RotateByHand, PreviewOrb, SurfaceClimbSettings, RoundEndActions, Loader, MapDescriptor, RoomList, MonkeRoomManager>();
     custom_types::Register::RegisterTypes<MapSelectorView, MapView, MapSelectorViewManager, MapNetworkJoinTrigger>();
 
     GorillaUI::Register::RegisterViewManager<MapSelectorViewManager*>("Map Loader", VERSION);

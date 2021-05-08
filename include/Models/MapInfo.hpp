@@ -10,6 +10,7 @@ namespace MapLoader
         public:
             bool operator<(const MapInfo& second) const;
             MapInfo(std::string filePath) : filePath(filePath) {};
+            std::string get_mapString();
             void Load();
             UnityEngine::Texture2D* LoadCubeMap();
             std::string filePath = "";

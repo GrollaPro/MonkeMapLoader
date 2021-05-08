@@ -16,6 +16,8 @@
 #include "UnityEngine/SkinnedMeshRenderer.hpp"
 
 #include "Behaviours/MapNetworkJoinTrigger.hpp"
+#include "Behaviours/MonkeRoomManager.hpp"
+
 extern Logger& getLogger();
 
 using namespace Photon::Pun;
@@ -79,9 +81,12 @@ namespace MapLoader::RoomUtils
         PlayerPrefs::Save();
 
         MapNetworkJoinTrigger::get_instance()->gameModeName = gameType;
+
+        MonkeRoomManager::get_instance()->ForceRegionIfExists(map);
+        
         photonNetworkController->currentGameType = gameType;
         photonNetworkController->AttemptToJoinPublicRoom(MapNetworkJoinTrigger::get_instance());
-
+        
         /*
         if (InRoom && gameMode != gameModeName)
         {

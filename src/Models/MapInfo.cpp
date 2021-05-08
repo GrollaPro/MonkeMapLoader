@@ -87,4 +87,15 @@ namespace MapLoader
         return firstName < secondName;
     }
 
+    std::string MapInfo::get_mapString()
+    {
+        if (packageInfo->config.guid != "")
+        {
+            return string_format("%s_%d", packageInfo->config.guid.c_str(), packageInfo->config.version);
+        }
+        else 
+        {
+            return string_format("%s_%d", packageInfo->descriptor.author.c_str(), packageInfo->descriptor.mapName.c_str());
+        }
+    }
 }

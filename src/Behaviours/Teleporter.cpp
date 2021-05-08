@@ -68,7 +68,7 @@ namespace MapLoader
                 return;
             }
         }
-
+        
         int index = teleportPoints->size > 1 ? rand() % teleportPoints->size : 0;
         Transform* dest = teleportPoints->items->values[index];
         

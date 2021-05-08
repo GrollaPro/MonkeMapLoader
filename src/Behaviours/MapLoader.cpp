@@ -505,15 +505,7 @@ namespace MapLoader
         mapLoadData.bundle = nullptr;
         isLoading = false;
         
-        // long ass string concat to make the lobby name, if guid exists use that, else use map author and map name
-        if (mapLoadData.info.packageInfo->config.guid != "")
-        {
-            lobbyName = string_format("%s_%d", mapLoadData.info.packageInfo->config.guid.c_str(), mapLoadData.info.packageInfo->config.version);
-        }
-        else 
-        {
-            lobbyName = mapLoadData.info.packageInfo->descriptor.author + "_" + mapLoadData.info.packageInfo->descriptor.mapName;
-        }
+        lobbyName = mapLoadData.info.get_mapString();
 
         mapLoadData.loadState = LoadState::FixLighting;
         mapLoadData.moveNext = true;

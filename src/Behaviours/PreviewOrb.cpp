@@ -15,7 +15,6 @@ namespace MapLoader
         instance = this;
         Renderer* renderer = get_gameObject()->GetComponent<Renderer*>();
         renderer->set_enabled(false);
-        getLogger().info("Orb start");
     }
 
     void PreviewOrb::ChangeOrb(Color color, Texture2D* texture)
@@ -24,7 +23,6 @@ namespace MapLoader
         {
             return;
         }
-        getLogger().info("instance ptr: %p", instance);
         Renderer* renderer = instance->get_gameObject()->GetComponent<Renderer*>();
         renderer->set_enabled(true);
         
