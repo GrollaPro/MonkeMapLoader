@@ -17,6 +17,8 @@ DECLARE_CLASS_CODEGEN(MapLoader, MapView, GorillaUI::Components::View,
     DECLARE_INSTANCE_FIELD(void*, mapInfo);
     DECLARE_INSTANCE_FIELD(bool, isUpdated);
 
+    public:
+        std::vector<std::string> missingModIDs = {};
     REGISTER_FUNCTION(
         REGISTER_METHOD(Awake);
         REGISTER_METHOD(Load);

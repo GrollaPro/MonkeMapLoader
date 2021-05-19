@@ -18,8 +18,7 @@
 #include "Behaviours/RoomList.hpp"
 #include "Behaviours/MonkeRoomManager.hpp"
 #include "Behaviours/MapNetworkJoinTrigger.hpp"
-
-#include "Models/RoomRegionInfo.hpp"
+#include "Behaviours/MovingPlatform.hpp"
 
 #include "UI/MapView.hpp"
 #include "UI/MapSelectorView.hpp"
@@ -119,7 +118,6 @@ MAKE_HOOK_OFFSETLESS(GorillaComputer_Start, void, GlobalNamespace::GorillaComput
 
     Object::DontDestroyOnLoad(listGO);
 
-    
     GameObject* countGO = *il2cpp_utils::New<GameObject*>();
     PlayerCountManager* countManager = countGO->AddComponent<PlayerCountManager*>();
 
@@ -360,8 +358,7 @@ extern "C" void load()
     using namespace MapLoader;
 
     custom_types::Register::RegisterType<GorillaMapTriggerBase>();
-    custom_types::Register::RegisterType<RoomRegionInfo>();
-    custom_types::Register::RegisterTypes<Teleporter, TagZone, Player, ObjectTrigger, RotateByHand, PreviewOrb, SurfaceClimbSettings, RoundEndActions, Loader, MapDescriptor, RoomList, MonkeRoomManager>();
+    custom_types::Register::RegisterTypes<Teleporter, TagZone, Player, ObjectTrigger, RotateByHand, PreviewOrb, SurfaceClimbSettings, RoundEndActions, Loader, MapDescriptor, RoomList, MonkeRoomManager, MovingPlatform>();
     custom_types::Register::RegisterTypes<MapSelectorView, MapView, MapSelectorViewManager, MapNetworkJoinTrigger>();
 
     GorillaUI::Register::RegisterViewManager<MapSelectorViewManager*>("Map Loader", VERSION);

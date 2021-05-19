@@ -21,6 +21,20 @@ namespace MapLoader
     void Player::Start()
     {
         instance = this;
+
+        Transform* parent = get_transform();
+        
+        std::string path = "";
+        while (parent)
+        {
+            Il2CppString* nameCS = parent->get_gameObject()->get_name();    
+            std::string name = to_utf8(csstrtostr(nameCS));
+
+            path = string_format("%s/%s", name.c_str(), path.c_str());
+            parent = parent->get_parent();
+        }
+
+        getLogger().info("Path: %s", path.c_str());
     }
 
     void Player::TeleportPlayer(Transform* destination)
@@ -102,5 +116,62 @@ namespace MapLoader
             playerRigidBody->set_isKinematic(false);
         }
         instance->isTeleporting = false;
+    }
+
+    void Player::Offset(Vector3 offset)
+    {
+        GameObject* go = instance->get_gameObject();
+        Rigidbody* playerRigidBody = go->GetComponent<Rigidbody*>();;
+
+        if (playerRigidBody)
+        { 
+            auto* player = go->GetComponent<GorillaLocomotion::Player*>();
+
+            Transform* playerTransform = player->get_transform();
+            CapsuleCollider* bodyCollider = player->bodyCollider;
+
+
+            Vector3 oldPos = playerTransform->get_position();
+            Vector3 pos = oldPos + offset;
+            
+            playerTransform->set_position(pos);
+
+            
+            SphereCollider* headCollider = player->headCollider;
+            Transform* headTransform = headCollider->get_transform();
+
+            // set last position
+            player->lastPosition = oldPos;
+
+            // set last head pos
+            Vector3 headPos = headTransform->get_position();
+            player->lastHeadPosition = headPos;
+
+            // set last left hand pos
+            Vector3 lastLeftHandPos = player->CurrentLeftHandPosition();
+            player->lastLeftHandPosition = lastLeftHandPos;
+
+            // set last right hand pos
+            Vector3 lastRightHandPos = player->CurrentRightHandPosition();
+            player->lastRightHandPosition = lastRightHandPos;
+        }
+    }
+
+    Vector3 Player::get_localizedPosition()
+    {
+        GameObject* go = instance->get_gameObject();
+        auto* player = go->GetComponent<GorillaLocomotion::Player*>();
+
+        CapsuleCollider* bodyCollider = player->bodyCollider;
+
+        Transform* colliderTransform = bodyCollider->get_transform();
+        Vector3 colliderPos = colliderTransform->get_position();
+
+        return colliderPos;
+    }
+
+    Player* Player::get_instance()
+    {
+        return instance;
     }
 }

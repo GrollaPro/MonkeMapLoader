@@ -8,6 +8,7 @@
 
 #include "Behaviours/PreviewOrb.hpp"
 #include "Behaviours/RotateByHand.hpp"
+#include "Behaviours/MovingPlatform.hpp"
 
 #include "Utils/RoomUtils.hpp"
 #include "quest-cosmetic-loader/shared/CosmeticLoader.hpp"
@@ -629,7 +630,7 @@ namespace MapLoader
                 child->set_layer(9);
             }
 
-            if (child->GetComponent<Teleporter*>() || child->GetComponent<TagZone*>() || child->GetComponent<ObjectTrigger*>())
+            if (child->GetComponent<Teleporter*>() || child->GetComponent<TagZone*>() || child->GetComponent<ObjectTrigger*>() || child->GetComponent<MovingPlatform*>())
             {
                 collider->set_isTrigger(true);
                 child->set_layer(MASKLAYER_PLAYERTRIGGER);

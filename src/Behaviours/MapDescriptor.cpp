@@ -8,6 +8,7 @@
 #include "Behaviours/ObjectTrigger.hpp"
 #include "Behaviours/SurfaceClimbSettings.hpp"
 #include "Behaviours/RoundEndActions.hpp"
+#include "Behaviours/MovingPlatform.hpp"
 
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Transform.hpp"
@@ -27,15 +28,24 @@ if (text.find(contains) != std::string::npos) map.push_back({gameObject, text})
 
 namespace MapLoader
 {
-    using MapBehaviourRepresentation = struct MapBehaviourRepresentation{
-            GameObject* first;
-            std::string second;
-        };
+    
 
-    using SerializeMap = std::vector<MapBehaviourRepresentation>; 
     using TeleporterMap = std::map<std::string, Teleporter*>;
     using TriggerMap = std::map<std::string, ObjectTrigger*>;
+    
+    void MapDescriptor::Awake()
+    {
+        registeredBehaviours.clear();
+        getLogger().info("Adding more instructions so it can definitely be hooked");
+        getLogger().info("hm yes tasty instructions");
+        getLogger().info("this should definitely be enough");
+    }
 
+    void MapDescriptor::RegisterBehaviour(std::string filter, SerializedBehaviourCallback callback)
+    {
+        registeredBehaviours[filter] = {{}, callback};
+    }
+    
     void MapDescriptor::Initialize()
     {
         Array<UI::Text*>* textComponents = GetComponentsInChildren<UI::Text*>(true);
@@ -49,7 +59,9 @@ namespace MapLoader
         SerializeMap roundEndActions = {};
         SerializeMap actionObjects = {};
 
-
+        RegisterBehaviour("MovingPlatform", [](GameObject* go, std::string serialized) { go->AddComponent<MovingPlatform*>(); });
+        //SerializeMap platformObjects = {};
+        
         getLogger().info("Handling all Text Components");
         for (int i = 0; i < textComponents->Length(); i++)
         {
@@ -66,7 +78,7 @@ namespace MapLoader
                 std::string subObj = serialized.substr(0, seperationpos + 1);
                 serialized = serialized.erase(0, seperationpos + 3);
 
-                toMapIfContains(subObj, "TeleporterName", teleporters);
+                     toMapIfContains(subObj, "TeleporterName", teleporters);
                 else toMapIfContains(subObj, "TeleportPoint", teleportPoints);
                 else toMapIfContains(subObj, "ObjectTriggerName", objectTriggers);
                 else toMapIfContains(subObj, "TriggeredBy", triggerPoints);
@@ -74,10 +86,12 @@ namespace MapLoader
                 else toMapIfContains(subObj, "SurfaceClimbSettings", surfaces);
                 else toMapIfContains(subObj, "RoundEndActions", roundEndActions);
                 else toMapIfContains(subObj, "RoundEndAction", actionObjects);
+                //else toMapIfContains(subObj, "MovingPlatform", platformObjects);
+                else if (CheckRegisteredCallbacks(gameObject, subObj)) {}
                 else getLogger().error("Could not find object type for object with textcomponent:\n%s", subObj.c_str());
             }
             
-            toMapIfContains(serialized, "TeleporterName", teleporters);
+                 toMapIfContains(serialized, "TeleporterName", teleporters);
             else toMapIfContains(serialized, "TeleportPoint", teleportPoints);
             else toMapIfContains(serialized, "ObjectTriggerName", objectTriggers);
             else toMapIfContains(serialized, "TriggeredBy", triggerPoints);
@@ -85,6 +99,8 @@ namespace MapLoader
             else toMapIfContains(serialized, "SurfaceClimbSettings", surfaces);
             else toMapIfContains(serialized, "RoundEndActions", roundEndActions);
             else toMapIfContains(serialized, "RoundEndAction", actionObjects);
+            //else toMapIfContains(serialized, "MovingPlatform", platformObjects);
+            else if (CheckRegisteredCallbacks(gameObject, serialized)) {}
             else getLogger().error("Could not find object type for object with textcomponent:\n%s", serialized.c_str());
         }
 
@@ -178,7 +194,7 @@ namespace MapLoader
         {
             TagZone* zone = t.first->AddComponent<TagZone*>();
         }
-
+        
         // initialize surfaces
         getLogger().info("Handling Surfaces");
         for (auto s : surfaces)
@@ -226,6 +242,22 @@ namespace MapLoader
                 }
             }
         }
+
+        /*
+        for (auto p : platformObjects)
+        {
+            p.first->AddComponent<MovingPlatform*>();
+        }
+        */
+
+        for (auto& r : registeredBehaviours)
+        {
+            for (auto& s : r.second.map)
+            {
+                r.second.callback(s.first, s.second);
+            }
+        }
+
         /*
         //setup scoreboard
         using namespace GlobalNamespace;
@@ -249,6 +281,23 @@ namespace MapLoader
 
         customBoard->SetActive(true);
         */
+    }
+
+    bool MapDescriptor::CheckRegisteredCallbacks(UnityEngine::GameObject* theGameObject, std::string serialized)
+    {
+        if (registeredBehaviours.size() == 0) return false;
+        
+        for (auto& b : registeredBehaviours)
+        {
+            // if the string contains the filter
+            if (serialized.find(b.first) != std::string::npos)
+            {
+                b.second.map.push_back({theGameObject, serialized});
+                return true;
+            }            
+        }
+
+        return false;
     }
 
     bool MapDescriptor::CanBeDescriptor(GameObject* go)

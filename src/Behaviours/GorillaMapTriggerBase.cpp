@@ -54,9 +54,6 @@ namespace MapLoader
 
     bool GorillaMapTriggerBase::CheckColliderComponents(Collider* collider)
     {
-        static std::vector<Il2CppClass*> gorillaTriggerColliderHandIndicatorKlass = {il2cpp_utils::GetClassFromName("", "GorillaTriggerColliderHandIndicator")};
-        static std::vector<Il2CppClass*> playerKlass = {il2cpp_utils::GetClassFromName("GorillaLocomotion", "Player")};
-
         GameObject* colliderGO = collider->get_gameObject();
         GlobalNamespace::GorillaTriggerColliderHandIndicator* handIndicator = colliderGO->GetComponentInParent<GlobalNamespace::GorillaTriggerColliderHandIndicator*>();
         GorillaLocomotion::Player* player = colliderGO->GetComponentInParent<GorillaLocomotion::Player*>();

@@ -82,11 +82,18 @@ namespace MapLoader::RoomUtils
 
         MapNetworkJoinTrigger::get_instance()->gameModeName = gameType;
 
-        MonkeRoomManager::get_instance()->ForceRegionIfExists(map);
+        std::string lobbyName = MonkeRoomManager::get_instance()->GetLobbyIfExists(map);
         
-        photonNetworkController->currentGameType = gameType;
-        photonNetworkController->AttemptToJoinPublicRoom(MapNetworkJoinTrigger::get_instance());
-        
+        if (lobbyName != "") 
+        {
+            photonNetworkController->currentGameType = gameType;
+            GorillaUI::BaseGameInterface::JoinRoom(lobbyName);
+        }
+        else
+        {
+            photonNetworkController->currentGameType = gameType;
+            photonNetworkController->AttemptToJoinPublicRoom(MapNetworkJoinTrigger::get_instance());
+        }
         /*
         if (InRoom && gameMode != gameModeName)
         {

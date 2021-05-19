@@ -4,7 +4,6 @@
 
 #include "UnityEngine/MonoBehaviour.hpp"
 #include "Photon/Realtime/RoomInfo.hpp"
-#include "Models/RoomRegionInfo.hpp"
 
 #include <string>
 #include <vector>
@@ -29,14 +28,14 @@ DECLARE_CLASS_CODEGEN(MapLoader, MonkeRoomManager, Il2CppObject,
         DECLARE_METHOD(static MonkeRoomManager*, get_instance);
         DECLARE_METHOD(void, OnConnectedToMaster);        
         DECLARE_METHOD(void, OnRoomListUpdate, List<Photon::Realtime::RoomInfo*>*);        
-        //DECLARE_INSTANCE_FIELD(List<RoomRegionInfo*>*, roomListCache);
+        DECLARE_STATIC_FIELD(int, updateCounter);
 
         public:
             static int PlayersOnMap(std::string mapName);
-            static void ForceRegionIfExists(std::string mapName);
+            static std::string GetLobbyIfExists(std::string mapName);
         private:
             static inline std::string forcedRegion = "";
-            static inline std::vector<std::string> checkedRegions = {};
+            static inline std::vector<std::string>* checkedRegions = nullptr;
             static inline std::vector<RoomInfoData> roomListCache = {};
             static inline RegionToMap MapsInRegion = {};
 
@@ -45,6 +44,6 @@ DECLARE_CLASS_CODEGEN(MapLoader, MonkeRoomManager, Il2CppObject,
         REGISTER_METHOD(get_instance);
         REGISTER_METHOD(OnConnectedToMaster);
         REGISTER_METHOD(OnRoomListUpdate);
-        //REGISTER_FIELD(roomListCache);
+        REGISTER_FIELD(updateCounter);
     )
 )

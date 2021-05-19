@@ -19,6 +19,8 @@ namespace MapLoader
         isUpdated = false;
         loaded = false;
         mapInfo = nullptr;
+
+        missingModIDs.clear();
     }
 
     void MapView::DidActivate(bool firstActivation)
@@ -27,6 +29,9 @@ namespace MapLoader
 
         // check wether the map plugin version is higher than the map info 
         isUpdated = mapInfo ? semver::satisfies(pluginVersion, "^" + ((MapInfo*)mapInfo)->packageInfo->androidRequiredVersion) : false;
+        
+        // get any missing mod IDs
+        missingModIDs = mapInfo ? ((MapInfo*)mapInfo)->packageInfo->config.GetMissingModIDs() : std::vector<std::string>{};
         Redraw();
     }
 
@@ -149,16 +154,34 @@ namespace MapLoader
     void MapView::DrawMap()
     {
         if (!mapInfo) return;
+
+        text += "<color=#fdfdfd>";
+        text += "<size=40>";
         if (!isUpdated) // if map is of newver version than the maploader
         {
-            text += "<color=#fdfdfd>";
             text += "\n  Your map loader is outdated,";
             text += "\n  please update it!";
             text += "\n  This map will not be allowed to be loaded";
             text += string_format("\n  Required: %s", ((MapInfo*)mapInfo)->packageInfo->androidRequiredVersion.c_str());
             text += string_format("\n  You Have: %s", pluginVersion.c_str());
-            text += "</color>";
         }
+
+        int count = missingModIDs.size();
+        if (count > 0)
+        {
+            text += string_format("\n  You are missing %d mod%s.", count, count > 1 ? "s" : "");
+            text += count > 1 ? "\n  These are their IDs:" : "\n  This is the ID: ";
+
+            for (auto& s : missingModIDs)
+            {
+                text += string_format("\n  %s", s.c_str());
+            }
+
+            text += "\n\n  Please install these mods in order to play on this map,";
+            text += "\n  This map will not be allowed to be loaded";
+            text += "\n</size>";
+        }   
+        text += "</color>";
 
         text += "\n<size=60>";
         text += string_format("   Author: <color=#fdfdfd>%s</color>\n", ((MapInfo*)mapInfo)->packageInfo->descriptor.author.c_str());
@@ -169,7 +192,7 @@ namespace MapLoader
     
     void MapView::OnKeyPressed(int key)
     {
-        if (loaded || !isUpdated) return;
+        if (loaded || !isUpdated || missingModIDs.size() > 0) return;
         if (key == (int)EKeyboardKey::Enter)
         {
             loaded = true;

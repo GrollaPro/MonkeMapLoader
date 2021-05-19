@@ -13,7 +13,7 @@ namespace MapLoader {
 #include "UnityEngine/Collider.hpp"
 #include "UnityEngine/MonoBehaviour.hpp"
 
-DECLARE_CLASS_CODEGEN(MapLoader, GorillaMapTriggerBase, UnityEngine::MonoBehaviour, 
+DECLARE_CLASS_CODEGEN(MapLoader, GorillaMapTriggerBase, UnityEngine::MonoBehaviour,
 
         DECLARE_METHOD(void, OnTriggerEnter, UnityEngine::Collider* collider);
         DECLARE_METHOD(void, OnTriggerStay, UnityEngine::Collider* collider);

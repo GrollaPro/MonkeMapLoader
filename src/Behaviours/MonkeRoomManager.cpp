@@ -59,11 +59,16 @@ RoomInfoData::RoomInfoData(RoomInfo* roomInfo, std::string region) : RoomInfoDat
 
 namespace MapLoader
 {
+    int MonkeRoomManager::updateCounter = 0;
+
     void MonkeRoomManager::ctor()
     {
         //roomListCache = *il2cpp_utils::New<List<RoomRegionInfo*>*>();
         //roomListCache->Clear();
         instance = this;
+        forcedRegion = "none";
+        updateCounter = 0;
+        checkedRegions = nullptr;
     }
 
     void MonkeRoomManager::OnRoomListUpdate(List<RoomInfo*>* roomList)
@@ -73,10 +78,10 @@ namespace MapLoader
         Il2CppString* currentRegionCS = PhotonNetwork::get_PhotonServerSettings()->AppSettings->FixedRegion;
         std::string currentRegion = currentRegionCS ? to_utf8(csstrtostr(currentRegionCS)) : "";
 
-        if (forcedRegion == "" && checkedRegions.size() == 0)
+        if (forcedRegion == "none" && !checkedRegions)
         {
             // clear list because we are gonna add new stuff
-            checkedRegions.clear();
+            checkedRegions = new std::vector<std::string>();
             forcedRegion = currentRegion;
             Array<Il2CppString*>* regions = PhotonNetworkController::_get_instance()->serverRegions;
             for(int i= 0; i < regions->Length(); i++)
@@ -84,10 +89,11 @@ namespace MapLoader
                 std::string region = regions->values[i] ? to_utf8(csstrtostr(regions->values[i])) : "";
 
                 // we want a list of all regions except current region
-                if (region != currentRegion) checkedRegions.push_back(region);
+                if (region != currentRegion) checkedRegions->push_back(region);
             }
         }
 
+        getLogger().info("Sorting through %d rooms for region %s", roomList->get_Count(), currentRegion.c_str());
         int validRoomscount = 0;
         int oldRooms = 0;
         // foreach in roomlist
@@ -166,7 +172,7 @@ namespace MapLoader
 
             getLogger().info("GameMode: %s\n get: %s", data.gameMode.c_str(), get.c_str());
             
-            // try to find if it exists
+            // try to find if it exists-
            MapToCount::iterator it = regionIT->second.find(get);
             // if it does, add to the count there
             if (it != regionIT->second.end()) it->second += data.playerCount;
@@ -179,13 +185,13 @@ namespace MapLoader
         if (roomList->get_Count() > 0)
         {
             // if we are not done checking regions
-            if (checkedRegions.size() > 0)
+            if (checkedRegions->size() > 0)
             {
                 // get new region
-                std::string newRegion = checkedRegions[0];
+                std::string newRegion = checkedRegions->at(0);
 
                 // remove first region from the list
-                checkedRegions.erase(checkedRegions.begin());
+                checkedRegions->erase(checkedRegions->begin());
 
                 // set the value
                 patchForcedRegion = newRegion;
@@ -194,13 +200,32 @@ namespace MapLoader
                 PhotonNetworkController::_get_instance()->AttemptDisconnect();
                 //PhotonNetwork::Disconnect();
             }
-            else if (checkedRegions.size() == 0 && forcedRegion != "")
+            else if (checkedRegions->size() == 0 && forcedRegion != "none")
             {
                 // set back to best ping region
                 patchForcedRegion = forcedRegion;
                 PhotonNetworkController::_get_instance()->AttemptDisconnect();
-                forcedRegion = "";
+                forcedRegion = "none";
             }
+        }
+
+        updateCounter ++;
+        getLogger().info("update Counter: %d", updateCounter);
+        // every n cycles, update all room data
+        if (updateCounter % 20 == 0)
+        {
+            updateCounter = 0;
+            getLogger().info("Updating all regions in room list cache");
+
+            roomListCache.clear();
+
+            checkedRegions->clear();
+            delete(checkedRegions);
+            checkedRegions = nullptr;
+
+            forcedRegion = "none";
+
+            PhotonNetworkController::_get_instance()->AttemptDisconnect();
         }
     }
 
@@ -247,8 +272,11 @@ namespace MapLoader
         return count;
     }
 
-    void MonkeRoomManager::ForceRegionIfExists(std::string mapName)
+    std::string MonkeRoomManager::GetLobbyIfExists(std::string mapName)
     {
+        // if there aren't even any rooms, let's save ourselves the trouble of looking for it
+        if (roomListCache.size() == 0) return "";
+
         Il2CppString* currentRegionCS = PhotonNetworkController::_get_instance()->GetRegionWithLowestPing();
         std::string currentRegion = currentRegionCS ? to_utf8(csstrtostr(currentRegionCS)) : "";
         getLogger().info("Current Best Ping region: %s\nsearching in %d rooms for map: %s", currentRegion.c_str(), roomListCache.size(), mapName.c_str());
@@ -269,11 +297,16 @@ namespace MapLoader
             }
         }
 
-        if (candidate && candidate->region != "")
+        if (candidate)
         {
+            getLogger().info("Found room '%s' in region '%s'", candidate->name.c_str(), candidate->region.c_str());
+            PhotonNetworkController::_get_instance()->ConnectToRegion(il2cpp_utils::createcsstr(candidate->region));
+            return candidate->name;
+
+            /*
             getLogger().info("Forcing region %s, this region was %s", candidate->region.c_str(), wasBest ? "In best Ping" : "Not in Best Ping");
             PhotonNetworkController::_get_instance()->ConnectToRegion(il2cpp_utils::createcsstr(candidate->region));
-
+            */
             /*
             if (PhotonNetwork::get_InRoom())
                 PhotonNetworkController::_get_instance()->AttemptDisconnect();
@@ -281,5 +314,7 @@ namespace MapLoader
                 PhotonNetwork::Disconnect();
             */
         }
+
+        return "";
     }
 }
