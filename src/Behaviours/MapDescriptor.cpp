@@ -28,8 +28,6 @@ if (text.find(contains) != std::string::npos) map.push_back({gameObject, text})
 
 namespace MapLoader
 {
-    
-
     using TeleporterMap = std::map<std::string, Teleporter*>;
     using TriggerMap = std::map<std::string, ObjectTrigger*>;
     
@@ -59,7 +57,8 @@ namespace MapLoader
         SerializeMap roundEndActions = {};
         SerializeMap actionObjects = {};
 
-        RegisterBehaviour("MovingPlatform", [](GameObject* go, std::string serialized) { go->AddComponent<MovingPlatform*>(); });
+        SerializedBehaviourCallback fun = [](GameObject* go, std::string serialized) { go->AddComponent<MovingPlatform*>(); };
+        RegisterBehaviour("MovingPlatform", fun);
         //SerializeMap platformObjects = {};
         
         getLogger().info("Handling all Text Components");
@@ -74,6 +73,7 @@ namespace MapLoader
 
             while (serialized.find("}, {") != std::string::npos)
             {
+
                 int seperationpos = serialized.find("}, {");
                 std::string subObj = serialized.substr(0, seperationpos + 1);
                 serialized = serialized.erase(0, seperationpos + 3);
@@ -86,7 +86,6 @@ namespace MapLoader
                 else toMapIfContains(subObj, "SurfaceClimbSettings", surfaces);
                 else toMapIfContains(subObj, "RoundEndActions", roundEndActions);
                 else toMapIfContains(subObj, "RoundEndAction", actionObjects);
-                //else toMapIfContains(subObj, "MovingPlatform", platformObjects);
                 else if (CheckRegisteredCallbacks(gameObject, subObj)) {}
                 else getLogger().error("Could not find object type for object with textcomponent:\n%s", subObj.c_str());
             }
@@ -99,7 +98,6 @@ namespace MapLoader
             else toMapIfContains(serialized, "SurfaceClimbSettings", surfaces);
             else toMapIfContains(serialized, "RoundEndActions", roundEndActions);
             else toMapIfContains(serialized, "RoundEndAction", actionObjects);
-            //else toMapIfContains(serialized, "MovingPlatform", platformObjects);
             else if (CheckRegisteredCallbacks(gameObject, serialized)) {}
             else getLogger().error("Could not find object type for object with textcomponent:\n%s", serialized.c_str());
         }

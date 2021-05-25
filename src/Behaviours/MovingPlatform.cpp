@@ -14,8 +14,6 @@ using namespace UnityEngine;
 
 extern Logger& getLogger();
 
-static Il2CppString* body = nullptr;
-static Il2CppString* hand = nullptr;
 namespace MapLoader
 {
     void MovingPlatform::Awake()
@@ -36,9 +34,6 @@ namespace MapLoader
 
     void MovingPlatform::OnTriggerEnter(Collider* collider)
     {
-        if (!body) body = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Body"); 
-        if (!hand) hand = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Hand"); 
-
         Il2CppString* nameCS = collider->get_gameObject()->get_name();    
 
         if (isLocalPlayer(collider))
@@ -49,9 +44,6 @@ namespace MapLoader
 
     void MovingPlatform::OnTriggerExit(Collider* collider)
     {
-        if (!body) body = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Body"); 
-        if (!hand) hand = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Hand"); 
-
         Il2CppString* nameCS = collider->get_gameObject()->get_name();    
         if (isLocalPlayer(collider))
         {
